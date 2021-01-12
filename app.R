@@ -113,36 +113,10 @@ server <- function(input, output,session) {
   ## Status --------------------------------------------------
   observe({
     
-    query <- parseQueryString(session$clientData$url_search)
-    #query <- parseQueryString("?o=6&x=0721e004f7aad93c29bbfa95c2f26602")
-    
-    #login
-    if (!is.null(query[['o']]) && !is.null(query[['x']])) {
-      memid <- query[['o']]
-      pass <- query[['x']]
-      
-      memid2 <- as.numeric(memid)
-      nres <- checklogin(memid2,pass)
-      
-      if(!is.na(memid2) && nres != "FALSE"){
-        shinyjs::show("exbut")
-        pipelines$username <- nres[[2]]
-        shinyalert("Thanks!", "You have successfully logged in!", type = "success")
-      }else{
-        shinyalert("Note!", "User does not exist, please register first! You will log in with ip!", type = "success")
-      }
-      
-      
-    }else{
-      #shinyalert("Note!", "You are logging in as guest mode and will log in as ip!", type = "success")
-      shinyjs::hide("exbut")
-      
-    }
-    if(is.null(pipelines$username)){
       runjs('var user_ips= returnCitySN["cip"];Shiny.onInputChange("user_ips",user_ips);')
       #pipelines$username <- input$user_ips
       pipelines$username <- "183.252.5.143"
-    }
+    
   })
   
   output$users <- renderText({
