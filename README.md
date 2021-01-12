@@ -19,11 +19,11 @@ analysis. PIAS is highly modular and project-oriented; results from each step ca
 
 ## Installation
 
-There are three different ways to launch PIAS:
-1)	Option 1: direct access to PIAS online
+There are three different ways to launch PIAS: 
+1)	Option 1: direct access to PIAS online. 
 URL: http://bigbio.xmu.edu.cn/PIAS/
 2)	Option 2: running via PIAS software package 
-Download package from URL: http://bigbio.xmu.edu.cn/PIAS/download/PIAS.zip
+Download package from URL: http://bigbio.xmu.edu.cn/PIAS/download/PIAS.zip. 
 Enter the R console or Rstudio, and then use runApp()
 ```{r}
 runApp(dirpath/PIAS)
