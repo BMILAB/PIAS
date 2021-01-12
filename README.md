@@ -1,10 +1,10 @@
 # PIAS
 a web-based interactive platform for integrative analysis of multi-source single-cell RNA-seq datasets
 PIAS is a web-based interactive platform for integrative analysis of multi-source single-cell RNA-seq datasets. Different from many other single-cell RNA-seq analysis 
-platforms or pipe-lines that mainly focus on preprocessing or analysis of one single-cell RNA-seq dataset, PIAS has the unique feature of integrating multi-source datasets 
-and incorporates various metrics for comprehensive-ly evaluating the result of data integration. Moreover, PIAS provides rich functions for data prepro-cessing, comprehensive 
+platforms or pipelines that mainly focus on preprocessing or analysis of one single-cell RNA-seq dataset, PIAS has the unique feature of integrating multi-source datasets 
+and incorporates various metrics for comprehensively evaluating the result of data integration. Moreover, PIAS provides rich functions for data preprocessing, comprehensive 
 analyses and visualization, including gene name transfer, quality control, normalization, highly variable genes identification, batch-effect removal, dimensionality 
-reduction, clustering, differentially expressed, cluster annotation, enrichment analysis, and single-cell trajectories con-struction. Users can freely choose to perform 
+reduction, clustering, differentially expressed, cluster annotation, enrichment analysis, and single-cell trajectories construction. Users can freely choose to perform 
 desired functions, visualize results, and transfer data through interactive operations with PIAS. As an easy-to-use interactive website, PIAS is an extendable platform for 
 preprocessing and integrative analysis of multi-source single-cell RNA-seq datasets.
 
