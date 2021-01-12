@@ -46,5 +46,5 @@ __*It is important that the input file should follow the same format as descibed
 
 
 ## Load projects:
-We have uploaded the three public projects in PIAS web server to [Figshare](https://doi.org/10.6084/m9.figshare.13205924). Users can find our database and download it by searching title. PIAS web server saves all public projects. If you want to use these items in the local version of PIAS, you need to download the item, unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS local version.
+We have uploaded the three public projects in PIAS web server to [Figshare](https://doi.org/10.6084/m9.figshare.13205924). Users can find our database and download it by searching title. PIAS web server saves all public projects. PIAS local version comes with the GSE84133 public project. If you want to use these items in the local version of PIAS, you need to download the item, unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS local version.
 
