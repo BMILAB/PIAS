@@ -114,8 +114,8 @@ server <- function(input, output,session) {
   observe({
     
       runjs('var user_ips= returnCitySN["cip"];Shiny.onInputChange("user_ips",user_ips);')
-      #pipelines$username <- input$user_ips
-      pipelines$username <- "183.252.5.143"
+      pipelines$username <- input$user_ips
+      #pipelines$username <- "183.252.5.143"
     
   })
   
