@@ -46,4 +46,4 @@ __*It is important that the input file should follow the same format as descibed
 
 
 ## Public projects:
-We have uploaded the test data used in PIAS to Figshare. Users can find our database and download it by searching title. Unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS.
+We have uploaded the test data used in PIAS to [Figshare](https://doi.org/10.6084/m9.figshare.13205924). Users can find our database and download it by searching title. Unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS.
