@@ -14,7 +14,7 @@ The schematic of PIAS workflow is illustrated in the figure. The entire workflow
 PIAS allows users to upload multiple gene expression matrices and corresponding metadata to perform data integration, and embeds rich functions for comprehensive single-cell 
 analysis. PIAS is highly modular and project-oriented; results from each step can be visually displayed and stored in a project.
 
-<img src=workflow.png height="800">
+<img src=workflow.png height="1000">
 
 
 ## Installation
