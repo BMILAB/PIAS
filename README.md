@@ -38,11 +38,11 @@ shiny::runUrl(“https://github.com/gangeszs/PIAS/archive/master.zip”)
 ## File format
 __*It is important that the input file should follow the same format as descibed below.*__
 
-1) Normal gene expression matrix and metadata file, such as: 
+1) Normal gene expression matrix and metadata file, such as: [GSE81076_CEL_seq.csv](www/example_data/GSE81076_CEL_seq.zip), [GSE81076_metadata.csv](www/example_data/GSE81076_metadata.zip).
    
-2) Sparse matrix and metadata file, such as: 
+2) Sparse matrix and metadata file (similar to [10x Genomics Single Cell Gene Expression Datasets](https://www.10xgenomics.com/resources/datasets/)), such as:  [matrix.mtx(.gz)](http://bigbio.xmu.edu.cn/PIAS/download/matrix.mtx.gz), [barcodes.tsv(.gz)](http://bigbio.xmu.edu.cn/PIAS/download/barcodes.tsv.gz), [features.tsv(.gz)](http://bigbio.xmu.edu.cn/PIAS/download/features.tsv.gz).
 
-3) Cell markers file,such as: [Pancreas_markers.txt](www/example_data/Pancreas_markers.txt)
+3) Cell markers file,such as: [Pancreas_markers.txt](www/example_data/Pancreas_markers.txt).
 
 
 ## Load projects:
