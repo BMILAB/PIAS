@@ -42,7 +42,7 @@ __*It is important that the input file should follow the same format as descibed
    
 2) Sparse matrix and metadata file, such as: 
 
-3) Cell markers file,such as: [![Pancreas_markers.txt]](www/example_data/Pancreas_markers.txt)
+3) Cell markers file,such as: [Pancreas_markers.txt](www/example_data/Pancreas_markers.txt)
 
 
 ## Public projects:
