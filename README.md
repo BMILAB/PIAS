@@ -32,7 +32,7 @@ runApp(dirpath/PIAS)
 ```{r}
 install.packages("devtools")
 devtools::install_github("rstudio/shiny", dependencies=FALSE)
-shiny::runUrl(“https://github.com/gangeszs/PIAS/archive/master.zip”)
+shiny::runUrl("https://github.com/BMILAB/PIAS/archive/master.zip")
 ```
 
 ## File format
