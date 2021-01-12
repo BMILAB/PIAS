@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>PIAS</title>
+  <link rel="shortcut icon" href="http://219.229.80.154:3838/PIAS/virus.icon" type="image/x-icon" />
+  {{ headContent() }}
+  {{ bootstrapLib() }}
+  <link rel="stylesheet" href="./css/index.css">
+  <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+
+</head>
+<style>
+
+  body{
+    background-color: #fcfcfc;
+    zoom:100%
+  }
+
+</style>
+
+<body>
+<div id="mobile-bar" class="">
+  <a class="menu-button"></a>
+  <a class="logo"></a>
+</div>
+<!--========================================================
+                          HEADER
+=========================================================-->
+<div id="header">
+  <a href="#">
+    <img src="./imgs/logo.png" height="50" alt="PIAS" style="position: relative; top:-5px">
+  </a>
+  <ul id="nav">
+    <li>
+      <a href="http://bigbio.xmu.edu.cn/PIAS/index.php" class="nav-link team nav-header" target="_blank">HOME</a>
+    </li>
+    <li class="nav-dropdown-container support-vue active">
+      <a class="nav-link nav-header">PIPELINE</a><span class="arrow"></span>
+      <ul class="nav-dropdown" id="">
+        <li><a href="#uploadData" tabindex="-1" data-toggle="tab" class="nav1-link" name="nshowext" onclick="getPaging(this)" >CREATE PROJECT</a></li>
+        <li><a href="#integrate" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">INTEGRATION</a></li>
+        <li><a href="#dimensionReduction" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">DIMENSION REDUCTION</a></li>
+        <li><a href="#clustering" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">CLUSTERING</a></li>
+        <li><a href="#differential" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">DE ANALYSIS</a></li>
+        <li><a href="#annotation" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">CLUSTER ANNOTATION</a></li>
+        <li><a href="#goAnalysis" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">ENRICHMENT ANALYSIS</a></li>
+        <li><a href="#pseudotime" tabindex="-1" data-toggle="tab" class="nav1-link" name="showext" onclick="getPaging(this)">TRAJECTORY ANALYSIS</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#" class="nav-link team nav-header">|</a>
+    </li>
+    <li>
+      {{textOutput("users")}}
+    </li>
+
+  </ul>
+
+</div>
+{{useShinyalert()}}
+<div style="margin-top: 10px">
+  {{actionButton('savetest', '',icon=icon('save'), class="btn btn-md btn-danger subbtn2",title="Save current project")}}
+</div>
+<!--========================================================
+                          CONTAIN
+=========================================================-->
+<div class="container" style="width: 85%;margin-top: 10px">
+  <div id="myTabContent" class="tab-content">
+    <!--save-->
+
+    <!--0 uploadData-->
+    <div class="tab-pane fade in active" id="uploadData">
+<!--      alert-->
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Create Project</strong>
+        Users can use public projects or upload data sets in this step to create personal projects.
+        After creating the project, the user can view each sub-data set on the [Analysis Results] tab for preprocessing separately.
+      </div>
+<!--      New Project-->
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Load Project</h3>
+        </div>
+        <div class="panel-body">
+          <blockquote  class="blocklis" >
+            <strong>Note:</strong>
+            If you are using the platform for the first time, please run the public project first.
+            Load the example of your choice though [Stored Project] - [Public Projects] - [Load].
+            If you already know how to do this, you can upload new datasets. It is worth noting that you are guaranteed
+            to upload the same data <a href="http://127.0.0.1/PIAS/help.htm#dataformat" target="_blank" style="color: darkred">format</a> as we
+            requested. After uploading the dataset, you can add them to create a new projects.
+          </blockquote>
+          <ul class="nav nav-tabs" id="dataTab">
+            <li class="active" >
+              <a href="#example" data-toggle="tab">
+                Stored Project
+              </a>
+            </li>
+            <li>
+              <a href="#userdata" data-toggle="tab">
+                Create Project
+              </a>
+            </li>
+
+            <li ><a href="#newdata" data-toggle="tab" >Upload Dataset</a></li>
+          </ul>
+          <div id="inputTab" class="tab-content">
+            <div class="tab-pane fade in active" id="example">
+              <br>
+              <h4 class="leftborder">Public Projects</h4>
+              <table class="table table-responsive">
+                <colgroup>
+                  <col>
+                  <col>
+                  <col>
+                  <col width="10%">
+                  <col>
+                  <col>
+                  <col>
+                </colgroup>
+                <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Type</th>
+                  <th>Number</th>
+                  <th>Source</th>
+                  <th>Description</th>
+                  <th>Download</th>
+                  <th>Load</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr>
+                  <td>Peripheral blood mononuclear cells (PBMC)</td>
+                  <td>Single</td>
+                  <td>1</td>
+                  <td>
+                    <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/" target="_blank"
+                       title="https://support.10xgenomics.com/single-cell-gene-expression/datasets/">PBMC</a>
+
+                  </td>
+                  <td>
+                    Peripheral blood mononuclear cells (PBMCs) from a healthy donor.
+                    PBMCs are primary cells with relatively small amounts of RNA (~1pg RNA/cell).
+                    Libraries were prepared following the Chromium Next GEM Single Cell 3ʹ Reagent Kits v3.1 User Guide (CG000204 RevA).
+                  </td>
+                  <td>
+                    <a href="example_data/PBMC.zip" class="btn btn-info btn-md" download="PBMC.zip"><span class="glyphicon glyphicon-download-alt"></span></a>
+                  </td>
+                  <td>
+                    {{actionButton("view_PBMC","",icon=icon('play'),class="btn btn-success btn-md",title="Load project",style = "color: white;")}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Human pancreatic islet cells across four technologies (HPIC)</td>
+                  <td>Multiple</td>
+                  <td>6</td>
+                  <td>
+                    <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE81076" target="_blank"
+                       title="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE81076">GSE81076</a>
+                    <br>
+                    <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE85241" target="_blank"
+                       title="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE85241">GSE85241</a>
+                    <br>
+                    <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86469" target="_blank"
+                       title="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86469">GSE86469</a>
+                    <br>
+                    <a href="https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5061/" target="_blank"
+                       title="https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5061/">E-MTAB-5061</a>
+                    <br>
+                    <a href="https://hemberg-lab.github.io/scRNA.seq.datasets/human/pancreas" target="_blank" title="https://hemberg-lab.github.io/scRNA.seq.datasets/human/pancreas">GSE84133 (human and mouse)</a>
+                    <br>
+                  </td>
+                  <td>
+                    This is composed of human pancreatic islets cells datasets obtained by five scRNA-seq technologies,
+                    including GSE81076 (Cel-Seq), GSE85241 (Cel-Seq2), GSE86469 (Fluidigm C1), E-MTAB-5061 (SMART-Seq2), and GSE84133(inDrop).
+
+                  </td>
+                  <td>
+                    <a href="example_data/HPIC.zip" class="btn btn-info btn-md" download="HPIC.zip"><span class="glyphicon glyphicon-download-alt"></span></a>
+                  </td>
+                  <td>
+                    {{actionButton("view_HPIC","",icon=icon('play'),class="btn btn-success btn-md",title="Load project",style = "color: white;")}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Human and mouse pancreatic islet cells (GSE84133)</td>
+                  <td>Multiple</td>
+                  <td>2</td>
+                  <td><a href="https://hemberg-lab.github.io/scRNA.seq.datasets/human/pancreas" target="_blank" title="https://hemberg-lab.github.io/scRNA.seq.datasets/human/pancreas">GSE84133</a></td>
+                  <td>inDrop, a droplet-based single-cell RNA-Seq method, is used to determine the transcriptomes of over
+                    12,000 individual pancreatic cells from four human donors and two mouse strains.
+                  </td>
+                  <td>
+                    <a href="example_data/GSE84133.zip" class="btn btn-info btn-md" download="GSE84133.zip"><span class="glyphicon glyphicon-download-alt"></span></a>
+                  </td>
+                  <td>
+                    {{actionButton("view_GSE84133","",icon=icon('play'),class="btn btn-success btn-md",title="Load project",style = "color: white;")}}
+                  </td>
+                </tr>
+
+                </tbody>
+              </table>
+              <hr>
+              <h4 class="leftborder">Personal Projects</h4>
+              {{ radioButtons("exportFormat", "Export format:",
+              c("Seurat" = "Seurat",
+              "SingleCellExperiment" = "SCE",
+              "Monocle" = "Monocle"),
+              selected = 'Seurat',
+              inline = TRUE
+              )
+              }}
+              {{DT::dataTableOutput("proTab")}}
+              {{downloadButton("download_export", "Download", style = "visibility: hidden;")}}
+
+            </div>
+            <div class="tab-pane fade" id="userdata">
+              <br>
+              <div class="row clearfix">
+                <div class="col-md-12 column">
+                  <h4>Dataset lists:</h4>
+                    {{DT::dataTableOutput("tabdslist")}}
+                </div>
+              </div>
+              <br>
+              <div class="row clearfix">
+                <div class="col-xs-4">
+                  {{textInput("projectName","Name:","NewProject")}}
+                  {{bsTooltip("projectName", "Name your new project","right", options = list(container = "body"))}}
+                </div>
+                <div class="col-xs-4">
+                  {{selectInput("Type", "Type:",choices = c(Single="Single", Multiple="Multiple"
+                  ),
+                  selected = "Multiple"
+                  )
+                  }}
+                  {{bsTooltip("Type", "Choose the treatment you want. \"Single\" represents the analysis of a single dataset, and \"Multiple\" represents the integration of multiple datasets","right", options = list(container = "body"))}}
+                </div>
+                <div class="col-xs-4">
+                  {{sliderInput("randomSeed", "Random seed:", value = 123, min = 1, max = 500, step=1)}}
+                  {{bsTooltip("randomSeed", "Control random seeds to ensure reproducibility","right", options = list(container = "body"))}}
+                </div>
+              </div>
+              <div class="row clearfix">
+                <div class="col-xs-12 column">
+                  <strong>
+                  {{verbatimTextOutput("selectlist")}}
+                  </strong>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-xs-2">
+                  {{actionButton('btn_delDT', 'Delete Dataset',icon=icon(""), class="btn btn-md btn-default")}}
+                </div>
+                <div class="col-xs-1">
+                  {{actionButton('btn_create', 'Create Project',class="btn btn-md btn-danger")}}
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="newdata">
+              <br>
+              <div class="panel panel-default">
+                <div class="nohedding panel-heading">
+                  Data format selection
+                </div>
+                <div class="panel-body">
+                  <div class="alert alert-info" id = "uploadError" style="display: none;color: indianred">
+                    <strong style="color: indianred">Error: </strong>{{textOutput("fileMes")}}
+                  </div>
+                  <ul class="nav nav-tabs" id="dataType">
+                    <li class="active">{{actionLink(
+                      inputId = "data_format1",
+                      label = "Data Format 1: Normal matrix",
+                      href = "#expMtx",
+                      "data-toggle" = "tab"
+                      )}}
+                    </li>
+                    <li>{{actionLink(
+                      inputId = "data_format2",
+                      label = "Data Format 2: Sparse matrix",
+                      href = "#gem10x",
+                      "data-toggle" = "tab"
+                      )}}
+                    </li>
+                  </ul>
+                  <div class="tab-content">
+                    <div class="tab-pane fade in active" id="expMtx">
+                      <br>
+                      <div class="row clearfix">
+                        <div class="col-xs-12">
+                          {{ radioButtons("expFtp", "* Choose upload method:",
+                          c("Local Upload (Suggest <10M, max=50M)" = "Local",
+                          "Large File (Suggest >10M)" = "Large",
+                          "FTP URL (Ftp / Local path / UUID)" = "FTP"),
+                          selected = 'Local',
+                          inline = TRUE
+                          )
+                          }}
+                        </div>
+                      </div>
+                      <div class="row clearfix" id="explocal" style="height: 100px">
+                        <div class="col-xs-6">
+                          {{fileInput('file1', 'Genes expression data (txt/csv/zip/gzip)',accept = c("text/csv","text/comma-separated-values,text/plain",".csv"))}}
+                        </div>
+                        <div class="col-xs-6">
+                          {{fileInput('file2', 'Meta-data Table (Option; txt/csv)',accept = c("text/csv","text/comma-separated-values,text/plain",".csv"))}}
+                        </div>
+                      </div>
+
+                      <div class="row clearfix" id="explarge" style="display: none;height: 100px">
+                        <div class="col-xs-10">
+                          <label>Copy the UUID of the file set and fill in the FTP URL input box to load the dataset!</label><br>
+                          <a href="http://bigbio.xmu.edu.cn/PIAS/webupload/examples/upload/upload.php" target="_blank" class="btn btn-md btn-info">Jump to the large file upload API</a>
+                        </div>
+                      </div>
+
+                      <div class="row clearfix" id="expurl" style="display: none;height: 100px">
+                        <div class="col-xs-6">
+                          {{textInput("expFTPurl","Genes expression data URL:",value="",width="450px",placeholder = "Such as ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz")}}
+                          {{bsTooltip("expFTPurl", "Please ensure that the ftp link only contains one genes expression matrix!","right", options = list(container = "body"))}}
+                        </div>
+                        <div class="col-xs-5">
+                          {{textInput("metaFTPurl","Meta-data URL(Optional):",value="",width="450px",placeholder = "Such as ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz")}}
+                          {{bsTooltip("metaFTPurl", "Please ensure that the ftp link only contains one metadata matrix!","right", options = list(container = "body"))}}
+                        </div>
+
+                        <div class="col-xs-1">
+                          <br>
+                          {{actionButton('btn_expftp', 'Get Files',class="btn btn-md btn-success")}}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="leftborder2" style="margin-bottom: 15px">
+                          <strong>Preview:</strong> Expression matrix (Subset)
+                        </div>
+                        <div>
+                          <div class="row">
+                            <div class="col-xs-4">
+                              {{radioButtons('header1', 'Header',choices = c(Auto='auto','TRUE'='TRUE','FALSE'='FALSE'),selected = 'auto',inline=TRUE)}}
+                            </div>
+                            <div class="col-xs-4">
+                              {{radioButtons('sep1', 'Separator',choices = c(Auto='auto',Comma=',',Semicolon=';',Tab='\t'),selected = 'auto',inline=TRUE)}}
+                            </div>
+                            <div class="col-xs-4">
+                              {{radioButtons('quote1', 'Quote',choices = c(None='','Double quote'='"','Single quote'="'"),selected = '',inline=TRUE)}}
+                            </div>
+                          </div>
+                          <hr>
+                          {{verbatimTextOutput("rowMatrix")}}
+                          <div class="row">
+                            <div class="col-xs-12">
+                              {{DT::dataTableOutput("table1")}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <br>
+                      <div>
+                        <div class="leftborder2" style="margin-bottom: 15px">
+                          <strong>Preview:</strong> Matedata sheet
+                        </div>
+                        <div>
+                          <div class="row">
+                            <div class="col-xs-4">
+                              {{checkboxInput("header2", "Header", TRUE)}}
+                            </div>
+                            <div class="col-xs-4">
+                              {{radioButtons('sep2', 'Separator',choices = c(Comma=',',Semicolon=';',Tab='\t'),selected = ',',inline=TRUE)}}
+                            </div>
+                            <div class="col-xs-4">
+                              {{radioButtons('quote2', 'Quote',choices = c(None='','Double quote'='"','Single quote'="'"),selected = '',inline=TRUE)}}
+                            </div>
+                          </div>
+                          <hr>
+                          <div class="row">
+                            <div class="col-xs-12">
+                              {{DT::dataTableOutput("table2")}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="gem10x">
+                      <br>
+                      <div class="row clearfix">
+                        <div class="col-xs-12">
+                          {{ radioButtons("way2", "* Choose upload method:",
+                          c("Local Upload (Suggest <10M, max=50M)" = "Local",
+                          "Large File (Suggest >10M)" = "Large",
+                          "FTP URL (Ftp / Local path / UUID)" = "FTP"),
+                          selected = 'Local',
+                          inline = TRUE
+                          )
+                          }}
+                        </div>
+                      </div>
+                      <div class="row clearfix" id="localWay" style="height: 100px">
+                        <div class="col-xs-4">
+                          {{fileInput('file10xm', 'matrix.mtx (or .mtx.gz)')}}
+                        </div>
+                        <div class="col-xs-4">
+                          {{fileInput('file10xg', 'genes.tsv/ features.tsv (or .tsv.gz)')}}
+                        </div>
+                        <div class="col-xs-4">
+                          {{fileInput('file10xb', 'barcodes.tsv (or .tsv.gz)')}}
+                        </div>
+                      </div>
+                      <div class="row clearfix" id="x10uuid" style="display: none;height: 100px">
+                        <div class="col-xs-10">
+                          <label>Copy the UUID of the file set and fill in the FTP URL input box to load the dataset!</label><br>
+                          <a href="http://bigbio.xmu.edu.cn/PIAS/webupload/examples/upload/upload.php" target="_blank" class="btn btn-md btn-info">Jump to the large file upload API</a>
+                        </div>
+                      </div>
+                      <div class="row clearfix" id="ftpWay" style="display: none;height: 100px">
+                        <div class="col-xs-10">
+                          {{textInput("FTPurl","URL:",value="",width="1000px",placeholder = "Such as ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2510nnn/GSM2510617/suppl/")}}
+                          {{bsTooltip("FTPurl", "Please ensure that the ftp link contains and only contains single matrix.mtx.gz,barcodes.tsv.gz and genes.tsv.gz!","right", options = list(container = "body"))}}
+                        </div>
+                        <div class="col-xs-1">
+                          <br>
+                          {{actionButton('btn_ftp', 'Get Files',class="btn btn-md btn-success")}}
+                        </div>
+                      </div>
+                      <div class="row clearfix">
+                        <div class="col-xs-3">
+                          {{numericInput("geneColumn", "gene.column",2,min = 1, max = 4,step=1)}}
+                          {{bsTooltip("geneColumn", "Specify which column of genes.tsv or features.tsv to use for gene names; default is 2","right", options = list(container = "body"))}}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="leftborder2" style="margin-bottom: 15px">
+                          <strong>Preview:</strong> Expression matrix (Subset)
+                        </div>
+                        <div>
+                          <div class="row">
+                            <div class="col-xs-12">
+                              {{DT::dataTableOutput("tab10x_matrix")}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <hr>
+                      <div>
+                        <div class="leftborder2" style="margin-bottom: 15px">
+                          <strong>Preview:</strong> Gene List
+                        </div>
+                        <div>
+                          <div class="row">
+                            <div class="col-xs-12">
+                              {{DT::dataTableOutput("tab10x_gene")}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <hr>
+                      <div>
+                        <div class="leftborder2" style="margin-bottom: 15px">
+                          <strong>Preview:</strong> Barcode
+                        </div>
+                        <div>
+                          <div class="row">
+                            <div class="col-xs-12">
+                              {{DT::dataTableOutput("tab10x_barcode")}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="nohedding panel-heading">
+                  Parameter settings
+                </div>
+                <div class="panel-body">
+                  <div class="col-xs-4">
+                    {{textInput("DSName","Name:",value="",placeholder = "Such as DS1")}}
+                    {{bsTooltip("DSName", "(Required) Name your new dataset","right", options = list(container = "body"))}}
+                  </div>
+                  <div class="col-xs-4">
+                    
+                    {{uiOutput("speciesSelect")}}
+                    {{bsTooltip("species", "(Required) Choose your data species","right", options = list(container = "body"))}}
+                  </div>
+                  <div class="col-xs-4">
+                    {{textInput("protocols","Technology:",value="",placeholder = "Such as CEL-seq")}}
+                    {{bsTooltip("protocols", "(Required) Fill in the scRNA-seq technology. If you are not sure about the technology, you can fill in the characters indicating the batch.","right", options = list(container = "body"))}}
+                  </div>
+                  <div class="col-xs-12">
+                    {{textAreaInput("description","Description (optional):","")}}
+                  </div>
+                </div>
+              </div>
+              <!--                preview-->
+              <div class="row">
+                <div class="col-xs-1">
+                  {{actionButton('btn_reset', 'Reset',class="btn btn-md btn-default")}}
+                </div>
+                <div class="col-xs-1" >
+                  {{actionButton('btn_upload', 'Submit',class="btn btn-md btn-danger")}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<!--      Result-->
+      <div class="panel panel-danger">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Analysis Results</h3>
+        </div>
+        <div class="panel-body">
+<!--          Dataset list-->
+          <div class="panel panel-default bs-callout-top1">
+            <div class="nohedding panel-heading">
+              Dataset lists
+            </div>
+            <div class="panel-body">
+              {{DT::dataTableOutput("DataSetLists")}}
+              <br>
+              <div class="row">
+                <div class="col-xs-1 col-xs-offset-5">
+                  <a id="btn_goMarge" href="#integrate" data-toggle="tab" class="btn btn-md btn-success" style="display: none">>> Integrate <<</a>
+                </div>
+                <div class="col-xs-1 col-xs-offset-3">
+                  <a id="home_next" href="#dimensionReduction" data-toggle="tab" class="btn btn-md btn-danger" style="display: none">Next Step: Dimension Reduction >></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!--1 Preprocessing-->
+    <div class="tab-pane fade" id="preprocessing">
+
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Preprocessing</strong>
+        Data preprocessing is the most important phase in computational biology.
+        This step includes gene name transfer, gene homologs search, quality control, normalization, detection of variable genes
+        and batch effect removal.
+        It is worth noting that data preprocessing may affect the interpretation of the final data processing results.
+      </div>
+      <div  data-spy="scroll" data-target="#myScrollspy">
+        <div class="row">
+          <div class="col-xs-3" id="myScrollspy">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body" >
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Gene name transfer</h4>
+                <strong>Gene names preview:</strong>
+                {{verbatimTextOutput("preview_gnames")}}
+                {{checkboxInput("transfer", "Whether to transfer the gene name?", FALSE)}}
+                {{conditionalPanel(condition="input.transfer==1 ",
+                uiOutput("campSelector_keytype")
+                )}}
+                <strong>TO:</strong>"SYMBOL"
+                <hr>
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Quality Control</h4>
+                {{numericInput("mincells", "Min cells:",3,min = 0, max = 10)}}
+                {{bsTooltip("mincells", "Include genes with detected expression in at least this many cells.","right", options = list(container = "body"))}}
+                {{numericInput("mingenes", "Min genes:",200,min = 0, max = 999)}}
+                {{bsTooltip("mingenes", "Include cells where at least this many genes are detected.","right", options = list(container = "body"))}}
+
+                {{checkboxInput("libsize.drop","Filter cells based on library size",value = TRUE)}}
+                {{bsTooltip("libsize.drop", "Remove cells with log-library sizes that are less than 3 MADs below the median log-library size.","right", options = list(container = "body"))}}
+
+                {{checkboxInput("feature.drop","Filter cells based on number of expressed gene",value = TRUE)}}
+                {{bsTooltip("feature.drop", "Remove cells with log-expressed genes that are less than 3 MADs below the median log-expressed genes.","right", options = list(container = "body"))}}
+
+                {{checkboxInput("mito.drop","Filter cells based on mitochondrial proportions",value = TRUE)}}
+                {{bsTooltip("mito.drop","Remove cells with mitochondrial proportions that are more than 3 MADs below the median mitochondrial proportions.", "right",options = list(container = "body"))}}
+
+                {{checkboxInput("spike.drop","Filter cells based on spike-in proportions",value = TRUE)}}
+                {{bsTooltip("spike.drop","Remove cells with spike-in proportions that are more than 3 MADs below the median spike-in proportions.","right", options = list(container = "body"))}}
+
+                <hr>
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Normalization</h4>
+
+                {{selectInput("isnormalize", "Normalization:",choices = c(LogNormalize="LogNormalize",
+                CLR="CLR",
+                RC="RC",
+                none="none"
+                ),
+                selected = "LogNormalize"
+                )
+                }}
+                {{bsTooltip("isnormalize", "How to Normalize data for a given assay. If the dataset has been normalized, you can choose 'none'. If you are not sure, choose the default option.","right", options = list(container = "body"))}}
+                <hr>
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Find Variable Features </h4>
+
+                {{uiOutput("nfes_sel")}}
+                {{bsTooltip("nfeatures", "Number of features to select as top variable features; only used when selection.method is set to 'dispersion' or 'vst'","right", options = list(container = "body"))}}
+
+                {{selectInput("hvgfunc", "Methods:",choices = c(vst="vst",
+                mean.var.plot="mvp",
+                dispersion ="disp"
+                ),
+                selected = "vst"
+                )
+                }}
+                {{bsTooltip("hvgfunc", "How to choose top variable features.","right", options = list(container = "body"))}}
+                <hr>
+
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Batch Effects</h4>
+                {{selectInput("batchEffect", "Batch effects:",choices = c(none="none",
+                ScaleData ="ScaleData",
+                Combat="Combat"
+                ),
+                selected = "ScaleData"
+                )
+                }}
+                {{bsTooltip("batchEffect", "Batch effects are technical sources of variation that have been added to the samples during handling.Choose a method for batch effects","right", options = list(container = "body"))}}
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_prepro', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#uploadData" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Upload Datasets</a>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_pro")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body">
+                <ul class="nav nav-tabs" id="ProResTab">
+                  <li class="active" >
+                    <a href="#report" data-toggle="tab">
+                      Report
+                    </a>
+                  </li>
+                  <li ><a href="#normal" data-toggle="tab" >Normalizing</a></li>
+                  <li ><a href="#highvar" data-toggle="tab" >Highly variable features</a></li>
+                  <li ><a href="#batch" data-toggle="tab" >Batch effects</a></li>
+
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="report">
+                    <br>
+                    <blockquote  class="blocklis" >
+                      <strong>Note:</strong>
+                      Pre-processing involves many substeps. Although some substeps can be skipped,
+                      we recommend perform each step according to the default parameters. Click "RUN" to execute this step, and click "Previous"
+                      to return to previous page.
+                    </blockquote>
+                    <div>
+                      <h4>Summary</h4>
+                      <table class="table table-bordered">
+                        <tbody>
+                        <tr>
+                          <td width= "25%" rowspan="2">Raw data</td>
+                          <td>Dataset Name</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("dsName")}}</span></td>
+                          <td>Species</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("species")}}</span></td>
+                          <td>Protocols</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Protocols")}}</span></td>
+                        </tr>
+                        <tr>
+                          <td>Raw cells</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Raw_cells")}}</span></td>
+                          <td>Raw genes</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Raw_genes")}}</span></td>
+                          <td>Raw sparsity (%)</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Raw_sparsity")}}</span></td>
+                        </tr>
+                        <tr>
+                          <td width= "25%" rowspan="2">Preprocessed</td>
+                          <td>Final cells</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Pro_cells")}}</span></td>
+                          <td>Final genes</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Pro_genes")}}</span></td>
+                          <td>Final sparsity (%)</td>
+                          <td><span class="badge badge-pill badge-warning">{{textOutput("Pro_sparsity")}}</span></td>
+                        </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr>
+                    <div>
+                      <div class="row">
+                        <div class="col-xs-4" style="top:80px">
+                          <h4>Indicator Relationship Visualization 1</h4>
+                          <p style="text-align: justify !important;">Relationship between Number of expressed genes and Library sizes.<br><br>
+                          In general, the size of the library is proportional to the number of expressed genes.The gray dots in the visualization show the filtered cells.</p>
+                        </div>
+                        <div class="col-xs-8">
+                          {{plotlyOutput("ReFC")}}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-xs-4" style="top:50px">
+                          <h4>Indicator Relationship Visualization 2</h4>
+                          <p style="text-align: justify !important;">Relationship between Number of expressed genes and mitochondrial proportions.<br><br>
+                            Cells with more mitochondria or more mitochondrial activity may naturally have larger mitochondrial
+                            proportions. High mitochondrial proportions are indicative of poor-quality cells, possibly because of
+                            increased apoptosis and/or loss of cytoplasmic RNA from lysed cells.<br><br>
+                            If all the points in the right plot are clustered with mitochondrial proportion equal to 0, it means that no mitochondrial (pattern: MT-) is detected in this dataset</P>
+                        </div>
+                        <div class="col-xs-8">
+                          {{plotlyOutput("ReFM")}}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-xs-4" style="top:50px">
+                          <h4 class="media-heading">Indicator Relationship Visualization 3</h4>
+                          <p style="text-align: justify !important;">Relationship between Number of expressed genes and Spike-in proportions.<br><br>
+                          The quantity of spike-in RNA added to each cell should be constant,
+                            which means that the proportion should increase upon loss of endogenous RNA in low-quality cells.
+                            So cells with more endogenous RNA or that are assayed with protocols using less spike-in RNA will have lower spike-in proportions. <br><br>
+                          If all the points in the right plot are clustered with spike-in proportion equal to 0, it means that no spike-in (pattern: ERCC) is detected in this dataset</P>
+                        </div>
+                        <div class="col-xs-8">
+                          {{plotlyOutput("ReFE")}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="normal">
+                    <br>
+                    <h4>Preprocessed meta data</h4>
+                    {{DT::dataTableOutput("table_QC")}}
+                    <hr>
+                    <div>
+                      {{selectInput("QC_y", "Feature:",choices = c(
+                      nCount_RNA ="nCount_RNA",
+                      nFeature_RNA="nFeature_RNA",
+                      percent.mt="percent.mt",
+                      percent.ERCC="percent.ERCC"
+                      ),
+                      selected = "nCount_RNA"
+                      )
+                      }}
+                      {{bsTooltip("QC_y", "Visualize the expression of each feature in different batches","right", options = list(container = "body"))}}
+                    </div>
+                    <br>
+                    <div class="col-xs-6">
+                      {{plotlyOutput("QCnGeneb")}}
+                    </div>
+                    <div class="col-xs-6">
+                      {{plotlyOutput("QCnGenea")}}
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-6">
+                        {{plotlyOutput("histogram_beC")}}
+                      </div>
+                      <div class="col-xs-6">
+                        {{plotlyOutput("histogram_afC")}}
+                      </div>
+                    </div>
+
+                  </div>
+                  <div class="tab-pane fade" id="highvar">
+                    <br>
+                    <h4>Highly variable features</h4>
+                    {{DT::dataTableOutput("table_HVFInfo")}}
+                    <hr>
+                    <div class="row">
+                      <div class="col-xs-10 col-xs-offset-1">
+                        {{plotlyOutput("plot_hvg")}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="batch">
+                    <br>
+                    <div class="row">
+                      <div class="col-xs-4">
+                        {{uiOutput("color_batch")}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{checkboxGroupInput(inputId = "dobatch", label = "Select the type of dataset to be plotted:",
+                        choices = c(
+                        "Normalized" = "Normalized",
+                        "Batch-effect removal"="batch-effect"
+                        ),selected = c('Normalized','batch-effect'),inline=TRUE)}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{actionButton('btn_batch', 'Plot', icon=icon('play'), class="btn btn-md btn-success")}}
+                      </div>
+                    </div>
+                    <div class="row">
+
+                      <div class="col-xs-4" style="top:50px">
+                        <h4 class="media-heading">Normalized dataset</h4>
+                        <p style="text-align:justify !important;">
+                          The dimensionality reduction visualization on the right shows the distribution of samples before
+                          batch effect removal. You can see the degree of mixing of different batches of samples.
+                          If the samples dispersion of different batches is obvious, it means that the batch effect has a
+                          greater impact. If different batches of samples are mixed together, it means that the batch effect
+                          of the original data is not serious.
+                        </p>
+                        </div>
+                      <div class="col-xs-8">
+                        {{plotOutput("batch_normalization")}}
+                      </div>
+                      <div class="col-xs-4" style="top:50px">
+                        <h4 class="media-heading">Dataset after batch-effect removal</h4>
+                        <p style="text-align:justify !important;">
+                          The dimensionality reduction visualization on the right shows the distribution of samples after
+                          batch-effect removal. You can see the degree of mixing of different batches of samples.
+                          After the batch-effect is removed, theoretically different batches of samples are mixed together and distributed evenly.
+                        </p>
+                        </div>
+                      <div class="col-xs-8">
+                        {{plotOutput("batch_scaledata")}}
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!--1.5  integrate-->
+    <div class="tab-pane fade" id="integrate">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Integration</strong>
+        Integration of single-cell RNA sequencing (scRNA-seq) data from multiple conditions, species, and technologies can uncover biological
+        insights. PIAS provides four integration schemes, and obtains the final comprehensive performance score by standardizing four benchmarks
+        to quantify the degree of data set embedding. The larger the score, the better the integration performance.
+      </div>
+      <div  data-spy="scroll" data-target="#myScrollspy15">
+        <div class="row">
+          <div class="col-xs-3" id="myScrollspy15">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Homologene</h4>
+                <p>Please select the target species!
+                  <a href="#" data-toggle="tooltip" data-placement="top" title="Please select a target species for homologous transformation. Changing this option will reset the current integration result!">
+                    <span class="glyphicon glyphicon-question-sign"></span>
+                  </a>
+                </p>
+                {{uiOutput("homoSelect")}}
+                <hr>
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Integrate</h4>
+
+                {{radioButtons("comb_range", "Range:",choices = c("All genes"="All","High variance genes" ="hvg"),
+                selected = "All")
+                }}
+                {{bsTooltip("comb_range", "","right", options = list(container = "body"))}}
+
+                {{radioButtons("comb_func", "Merging method:",choices = c("Intersection" ="Intersection", "Union"="Union"),
+                selected = "Union")
+                }}
+                {{bsTooltip("comb_func", "Take the intersection or union of all dataset genes. Changing this option will reset the current integration result!","right", options = list(container = "body"))}}
+
+                {{selectInput("integ_func", "Integrate methods:",choices = c("Seurat V3" ="Seurat3", mnnCorrect="mnnCorrect",
+                Harmony = "Harmony",LIGER="LIGER"
+                ),
+                selected = "Harmony"
+                )
+                }}
+
+                {{conditionalPanel(condition="input.integ_func=='MNNs' ",
+                numericInput("k.mnn", "k",20,min = 1, max = 100),
+                sliderInput("sigma.mnn", "sigma",0.1,min = 0.1, max = 1,step=0.1)
+                )}}
+                {{conditionalPanel(condition="input.integ_func=='Harmony' ",
+                sliderInput("sigma.Harmony", "sigma",0.1,min = 0.1, max = 1,step=0.1)
+                )}}
+
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_marge', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#uploadData" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Upload Datasets</a>
+                </div>
+                <br>
+                <div>
+                  <a href="#clustering" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Clustering cells</a>
+                </div>
+
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_int")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body">
+                <ul class="nav nav-tabs">
+                  <li class="active" >
+                    <a href="#report_in" data-toggle="tab">
+                      Report
+                    </a>
+                  </li>
+                  <li ><a href="#demonstration" data-toggle="tab" >Data demonstration</a></li>
+                  <li ><a href="#evaluation" data-toggle="tab" >Evaluation index</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="report_in">
+                    <br>
+                    <div style="font-weight: bolder;text-align: center">Summary</div>
+                    <br>
+                    <div class="row">
+                      <div class="col-xs-8">
+                        <br style="background-color: darkgoldenrod;font-weight: bolder;text-align: center">
+                        <br>
+                        {{DT::dataTableOutput('int_info')}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{plotOutput("plot_venn")}}
+                      </div>
+                    </div>
+                    <hr>
+                    <div style="font-weight: bolder;text-align: center">UMAP</div>
+                    <br>
+                    <div class="row">
+                      <div class="col-xs-6">
+                        {{plotlyOutput("mergePlot1")}}
+                      </div>
+                      <div class="col-xs-6">
+                        {{plotlyOutput("mergePlot2")}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="demonstration">
+                    <br>
+                    <h3>Expression matrix</h3>
+                      {{dataTableOutput('int_exp')}}
+                    <br>
+                    <h3>Meta data</h3>
+                    {{dataTableOutput('int_meta')}}
+                    <br>
+                  </div>
+
+                  <div class="tab-pane fade" id="evaluation">
+                    <br>
+
+                    <blockquote  class="blocklis" >
+                      <strong>Note:</strong>
+                      <p>In order to judge the performance of the integrated analysis here, we considered two reasonable
+                        benchmarking metrics including kBET, LISI.</p>
+                      <p>According to the biological problem you want to solve, choose a reasonable benchmarking metrics to measure
+                        and evaluate the effect of eliminating the substitution factors caused by different technology.</p>
+                      <p>Please run benchmark metrics yourself !</p>
+                    </blockquote>
+                    <div class="row">
+                      <div class="col-xs-12">
+                        {{radioButtons("set_weight", "Weight:",choices = c("EWM (the entropy weight method)" ="EWM", "Subjective experience"="SE"),
+                        selected = "EWM",inline = TRUE)
+                        }}
+                      </div>
+                      <div class="col-xs-2">
+                        {{conditionalPanel(condition="input.set_weight=='SE' ",
+                        numericInput("Lisi_w", "Lisi",20,min = 0, max = 100,step= 1)
+                        )}}
+                      </div>
+                      <div class="col-xs-2">
+                        {{conditionalPanel(condition="input.set_weight=='SE' ",
+                        numericInput("kBET_w", "kBET",20,min = 0, max = 100,step= 1)
+                        )}}
+                      </div>
+                      <div class="col-xs-2">
+                        {{conditionalPanel(condition="input.set_weight=='SE' ",
+                        numericInput("ASW_w", "ASW",20,min = 0, max = 100,step= 1)
+                        )}}
+                      </div>
+                      <div class="col-xs-2">
+                        {{conditionalPanel(condition="input.set_weight=='SE' ",
+                        numericInput("CH_w", "CH",20,min = 0, max = 100,step= 1)
+                        )}}
+                      </div>
+                      <div class="col-xs-2">
+                        {{conditionalPanel(condition="input.set_weight=='SE' ",
+                        numericInput("ARI_w", "ARI",20,min = 0, max = 100,step= 1)
+                        )}}
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-xs-7">
+                        {{ tableOutput('com_score') }}
+                      </div>
+
+                      <div  class="col-xs-5">
+                        <br>
+                          <div class="small-box bg-green">
+                            <div class="inner">
+                              <h3>{{textOutput("BestFunc")}}</h3>
+                              <h5>{{textOutput("MaxScore")}}</h5>
+                            </div>
+                            <div class="icon-large">
+                              <i class="fa fa-star"></i>
+                            </div>
+                          </div>
+                      </div >
+                    </div>
+
+                    <div>
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <form class="form-inline">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <h3 class="panel-title">
+                                  LISI: Local inverse Simpson’s index
+                                </h3>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                {{actionButton('btn_Lisi', 'RUN', icon=icon('send'), class="btn btn-success")}}
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="panel-body">
+                          
+                          {{plotOutput("lisi_plot")}}
+                          <br>
+                          {{plotlyOutput("lisi_violin")}}
+                        </div>
+                      </div>
+
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <form class="form-inline">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <h3 class="panel-title">
+                                  kBET: k-Nearest neighbor batch-effect test
+                                </h3>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                {{actionButton('btn_kBET', 'RUN', icon=icon('send'), class="btn btn-success")}}
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="panel-body">
+                          {{plotlyOutput("kBET_violin")}}
+                        </div>
+                      </div>
+
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <form class="form-inline">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <h3 class="panel-title">
+                                  ASW: Average silhouette width
+                                </h3>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                {{actionButton('btn_ASW', 'RUN', icon=icon('send'), class="btn btn-success")}}
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="panel-body">
+                          {{plotlyOutput("ASW_violin")}}
+                        </div>
+                      </div>
+
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <form class="form-inline">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <h3 class="panel-title">
+                                  CH: Calinski-Harabasz index
+                                </h3>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                {{actionButton('btn_CH', 'RUN', icon=icon('send'), class="btn btn-success")}}
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="panel-body">
+                          {{plotlyOutput("CH_violin")}}
+                        </div>
+                      </div>
+
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <form class="form-inline">
+                            <div class="row">
+                              <div class="col-xs-6">
+                                <h3 class="panel-title">
+                                  ARI: Adjusted rand index
+                                </h3>
+                              </div>
+                              <div class="col-xs-6 text-right">
+                                {{actionButton('btn_ARI', 'RUN', icon=icon('send'), class="btn btn-success")}}
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="panel-body">
+                          {{plotlyOutput("ARI_violin")}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--2 dimensionReduction-->
+    <div class="tab-pane fade" id="dimensionReduction">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Dimensionality reduction</strong>
+        Next, we perform a dimensionality reduction on the data after preprocessing.
+        Many genes and single cells are not of interest because they do not change much.
+        However, running dimensionality reduction on highly variable genes can improve performance.
+        We provide users with PCA, tSNE and UMAP</div>
+      <div  data-spy="scroll" data-target="#myScrollspy2">
+        <div class="row">
+          <div class="col-xs-3" id="myScrollspy2">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+                  {{selectInput("dimfunc", "Dimension reduction function:",
+                  choices = c(PCA='PCA',
+                  tSNE='tSNE',
+                  UMAP='UMAP'
+                  ),
+                  selected = 'PCA'
+                  )}}
+                  {{bsTooltip("dimfunc", "Choose a method to reduce Dimension.If you choose tSNE, we will first perform PCA.","right", options = list(container = "body"))}}
+                  {{sliderInput("pcs.compute", "PCs Compute", value = 10, min = 1, max = 20, step=1)}}
+                  {{conditionalPanel(condition="input.dimfunc=='tSNE' ",
+                  numericInput("perplexity", "Perplexity",96,min = 1, max = 100),
+                  numericInput("max_iter", "Max iter",1000,min = 1, max = 9999)
+                  )}}
+
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Plotting</h4>
+
+                  {{uiOutput("campSelector2")}}
+                  {{bsTooltip("groupBy", "Group (color) cells in different ways","right", options = list(container = "body"))}}
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_dim', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#uploadData" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Preprocessing</a>
+                </div>
+                <br>
+                <div>
+                  <a href="#clustering" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Clustering cells</a>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_dim")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body">
+                <ul class="nav nav-tabs" id="dimPlot">
+                  <li class="active" >
+                    <a href="#dimvis" data-toggle="tab">
+                      Dimensional reduction visualization
+                    </a>
+                  </li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="dimvis">
+                    <br>
+
+                    <div class="row">
+                      <div class="col-xs-6">
+                        {{plotlyOutput("Dimplot2D")}}
+                      </div>
+                      <div class="col-xs-6">
+                        {{plotlyOutput("Dimplot3D")}}
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--3 clustering-->
+    <div class="tab-pane fade" id="clustering">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Clustering</strong>
+        To identify contaminating cell populations and assess overall heterogeneity in the data, we clustered all single cells.
+        Although this step provides three methods, it produces different clustering effects by combining the previous dimensionality reduction method and integration method.
+        If you get inappropriate results, please adjust the parameters.
+      </div>
+      <div class="row">
+        <div class="col-xs-3">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+            </div>
+            <div class="panel-body">
+
+              <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+              {{uiOutput("choose_intfunc")}}
+
+              <div id="clu_dim">
+                {{selectInput("dimchos", "Dimension reduction function:",
+                choices = c(PCA='PCA',
+                tSNE='tSNE',
+                UMAP='UMAP'
+                ),
+                selected = 'PCA'
+                )}}
+              </div>
+
+              {{selectInput("clusterfunc", "Clustering methods:",
+              choices = c("Hierarchical clustering"='hierarchical',
+              "k-means"='kmeans',
+              "Louvain"='Louvain',
+              "SLM"='SLM',
+              "Leiden"='Leiden'
+              ),
+              selected = 'SLM'
+              )}}
+              {{conditionalPanel(condition="input.clusterfunc=='hierarchical' ",
+              numericInput("k.hc", "k",7,min = 1),
+              selectInput("method.hc", "methods",
+              choices = c("ward.D"="ward.D",
+              "single"="single",
+              "complete"="complete",
+              "average"="average",
+              "median"="median",
+              "centroid"="centroid"
+              ),selected = "ward.D")
+              )}}
+
+              {{conditionalPanel(condition="input.clusterfunc=='SLM' ",
+
+              sliderInput("resolution", "resolution", value = 0.1, min = 0, max = 1, step=0.01)
+
+              )}}
+
+              {{conditionalPanel(condition="input.clusterfunc=='kmeans' ",
+              numericInput("centers.ks", "centers",7,min = 1)
+              )}}
+
+              {{bsTooltip("resolution", "Value of the resolution parameter, use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities","right", options = list(container = "body"))}}
+              {{bsTooltip("centers.ks", "The number of clusters, say k, or a set of initial (distinct) cluster centres. If a number, a random set of (distinct) rows in x is chosen as the initial centres.","right", options = list(container = "body"))}}
+
+              <div class="row">
+                <div class="col-md-1 col-md-offset-4">
+                  {{actionButton('btn_cluster', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                </div>
+              </div>
+              <hr>
+              <div id="drIs">
+                <a href="#dimensionReduction" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Dimension reduction</a>
+              </div>
+              <div id="intIs">
+                <a href="#integrate" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Integration</a>
+              </div>
+              <br>
+              <div>
+                <a href="#differential" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Differential expression analysis</a>
+              </div>
+
+            </div>
+          </div>
+          <div class="panel panel-warning">
+            <div class="panel-body">
+              {{htmlOutput("info_clu")}}
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-9">
+          <div class="panel panel-danger">
+            <div class="nohedding panel-heading ">
+              <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Determining Optimal Clusters (Optional)</h3>
+            </div>
+            <div class="panel-body">
+              <blockquote  class="blocklis" >
+                <strong>Note:</strong>
+                <p>To aid the user when using k-means, the following two most popular methods for determining the optimal clusters are selected, which includes: elbow method and silhouette method. </p>
+                <p>The first (or most significant) inflection point of the elbow curve indicates the optimal number of clusters.
+                  By maximizing the average silhouette values, the optimal cluster number k can be determined due to the average silhouette approach can measure the quality of a clustering.</p>
+                {{actionButton('btn_k', 'Pre-run', icon=icon('play-circle'), class="btn btn-md btn-info")}}
+              </blockquote>
+              <div class="row">
+                <div class="col-xs-6">
+                  {{plotOutput("elbowPlot")}}
+                </div>
+                <div class="col-xs-6">
+                  {{plotOutput("silPlot")}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-danger">
+            <div class="nohedding panel-heading ">
+              <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+            </div>
+            <div class="panel-body">
+              <h4 class="leftborder">Cluster result plot</h4>
+              {{uiOutput("campSelector3")}}
+              <hr>
+              <div class="row">
+                <div class="col-xs-6">
+                  {{plotlyOutput("clusterPlot")}}
+                </div>
+                <div class="col-xs-6">
+                  {{plotlyOutput("ASWPlot")}}
+                </div>
+              </div>
+
+              <h4 class="leftborder">
+
+                {{tags$a(id = "download_cluster", class = "shiny-download-link", style="float:left",href = "",
+                target = "_blank", download = NA, NULL,icon("cloud-download"))}}
+                {{bsTooltip("download_cluster", "Click to download the cluster result","left", options = list(container = "body"))}}
+                &nbsp;Cluster result list
+              </h4>
+
+              {{DT::dataTableOutput("table_cluster")}}
+              <br>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--4 differential-->
+    <div class="tab-pane fade" id="differential">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Differential expression analysis</strong>
+        Find genes by differential expression between different cell groups. Find genes by differential expression between
+        different cell groups. The user can select all clusters or a pair of clusters to analyze the marker genes of the
+        experimental group based on the previous clustering results.
+      </div>
+      <div  data-spy="scroll" data-target="#myScrollspy4">
+        <div class="row">
+          <div class="col-xs-3" id="myScrollspy4">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+                {{uiOutput("choose_cluster")}}
+                {{ radioButtons("deSet", "Select genesets:",
+                c("all" = "all",
+                "pair" = "pair"),
+                selected = 'all'
+                )
+                }}
+
+                {{conditionalPanel(condition="input.deSet=='pair' ",
+                uiOutput("choose_set1"),
+                uiOutput("choose_set2")
+                )
+                }}
+
+                {{selectInput("DEfunc", "Test methods:",
+                choices = c("Wilcoxon Rank Sum test"='wilcox',
+                "Likelihood-ratio test"='bimod',
+                "ROC"='roc',
+                "Student's t-test"='t',
+                "Logistic regression framework"='LR'
+                ),
+                selected = 'wilcox'
+                )}}
+                {{numericInput("logfc.threshold", "logfc.threshold:",0.25,min = 0, max = 1,step=0.01)}}
+                {{bsTooltip("threshold", "Limit testing to genes which show, on average, at least X-fold difference (log-scale) between the two groups of cells. Default is 0.25 Increasing logfc.threshold speeds up the function, but can miss weaker signals. ","right", options = list(container = "body"))}}
+                {{numericInput("min.pct", "min.pct:",0.1,min = 0, max = 1,step=0.1)}}
+                {{bsTooltip("min.pct", "Only test genes that are detected in a minimum fraction of min.pct cells in either of the two populations. Meant to speed up the function by not testing genes that are very infrequently expressed. Default is 0.1","right", options = list(container = "body"))}}
+                {{checkboxInput("only_pos", "only_pos", TRUE)}}
+                {{bsTooltip("only_pos", "Only return positive markers","right", options = list(container = "body"))}}
+
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_diff', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#clustering" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Clustering cells</a>
+                </div>
+                <br>
+                <div>
+                  <a href="#annotation" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Cluster annotation</a>
+                </div>
+                <br>
+                <div>
+                  <a href="#goAnalysis" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Enrichment analysis</a>
+                </div>
+                <br>
+                <div>
+                  <a href="#pseudotime" data-toggle="tab" class="btn btn-sm btn-success btn-block"> >> NEXT: Trajectory analysis</a>
+                </div>
+
+
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_diff")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body" style="min-height:1200px">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#de_plot" data-toggle="tab">DE result plot</a></li>
+                  <li><a href="#de_list" data-toggle="tab" >DE result list</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="de_plot">
+                    <div class="col-xs-4">
+                      {{numericInput("topNum", "Top number:",10,min = 1, max = 30)}}
+                      {{bsTooltip("topNum", "Plotting the top n marker genes for each cluster","right", options = list(container = "body"))}}
+                    </div>
+                    <div class="col-xs-4">
+                      {{uiOutput("gene_Lists")}}
+                    </div>
+
+                    <div class="col-xs-4">
+                      {{selectInput("deplots", "Biomarkers visualization:",
+                      choices = c("feature plots"='Feature',
+                      "ridge plots"='Ridge',
+                      "dot plots"='Dot',
+                      "violin plot"='Violin',
+                      "heatmap"='Heatmap'
+                      ),
+                      selected = 'Feature'
+                      )}}
+                    </div>
+                    <hr>
+                      {{plotOutput("diffPlot",height = "1000px")}}
+                  </div>
+                  <div class="tab-pane" id="de_list">
+                    <br>
+                    {{tags$a(id = "download_DE", class = "shiny-download-link", style="float:right",href = "",
+                    target = "_blank", download = NA, NULL,icon("cloud-download"))}}
+                    {{bsTooltip("download_DE", "Download the DE result","left", options = list(container = "body"))}}
+                    {{DT::dataTableOutput("table_DE")}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--5 Enrichment Analysis-->
+    <div class="tab-pane fade" id="goAnalysis">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Gene Ontology (GO) enrichment analysis</strong>
+        The GO enrichment analysis classifies the differential genes by GO, and performs saliency analysis, misjudgment rate analysis,
+        and enrichment analysis based on discrete distribution. The classification of targeted gene functions with a low false positive rate,
+        which is significantly related to the experimental purpose,
+        is the most important functional difference that leads to differences in sample traits.
+        We perform GO analysis using the <code>clusterProfiler</code> package.
+      </div>
+      <div>
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+                {{uiOutput("clusterSelector1")}}
+                {{bsTooltip("gcluster1", "Input gene list. The result of DE analysis","right", options = list(container = "body"))}}
+
+                {{
+                checkboxGroupInput("Enmeas", "Measures:",
+                c("GO" = "GO",
+                "KEGG" = "KEGG"),
+                selected ="GO",
+                inline=TRUE
+                )
+                }}
+
+                {{radioButtons('enrichFc', 'Enrichment methods:',
+                choices = c("Over-Representation Analysis (ORA)"='ORA',
+                "Functional Class Scoring (FCS)"='FCS'),
+                selected = 'ORA')}}
+
+                {{selectInput("ont", "Sub ontologies:",
+                choices = c(
+                ALL='ALL',
+                BP='BP',
+                MF='MF',
+                CC='CC'
+                ),
+                selected = 'ALL'
+                )}}
+
+                {{bsTooltip("ont", "One of 'ALL', 'MF', 'BP', and 'CC' subontologies. If you select 'ALL', the running time will be longer.","right", options = list(container = "body"))}}
+
+                {{selectInput("pAdjustMethod", "pAdjustMethod:",
+                choices = c(holm='holm',
+                hochberg='hochberg',
+                hommel='hommel',
+                bonferroni ='bonferroni',
+                BH='BH',
+                BY='BY',
+                fdr='fdr',
+                none='none'
+                ),
+                selected = 'fdr'
+                )}}
+
+                {{bsTooltip("pvalueCutoff", "one of 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'","right", options = list(container = "body"))}}
+
+                {{sliderInput("pvalueCutoff", "p-value cutoff:", value = 0.05, min = 0, max = 1, step=0.01)}}
+                {{bsTooltip("pvalueCutoff", "Cutoff value of pvalue","right", options = list(container = "body"))}}
+
+                {{sliderInput("qvalueCutoff", "q-value cutoff:", value = 0.05, min = 0, max = 1, step=0.01)}}
+                {{bsTooltip("qvalueCutoff", "Cutoff value of qvalue","right", options = list(container = "body"))}}
+                <hr>
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_go', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#differential" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Differential expression analysis</a>
+                </div>
+
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_rich")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger" >
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Gene ontology enrichment analysis</h3>
+              </div>
+              <div class="panel-body" >
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#go_Plot" data-toggle="tab" >Plot</a></li>
+                  <li><a href="#go_list" data-toggle="tab" >GO result</a></li>
+                  <li><a href="#go_gsea" data-toggle="tab">Running score and Preranked list</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="go_Plot" style="min-height:900px">
+
+                    <div class="row clearfix">
+                      <div class="col-xs-4">
+                        {{sliderInput("showCategory", "Show category:", value = 10, min = 1, max = 30, step=1)}}
+                        {{bsTooltip("showCategory", "Number of enriched terms to display","right", options = list(container = "body"))}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{selectInput("gocolorBy", "Color by:",
+                        choices = c(qvalue='qvalue',
+                        pvalue='pvalue',
+                        p.adjust = 'p.adjust'
+                        ),
+                        selected = 'p.adjust'
+                        )}}
+                        {{bsTooltip("gocolorBy", "Variable that used to color enriched terms, e.g. pvalue, p.adjust or qvalue","right", options = list(container = "body"))}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{selectInput("goplots", "GO visualization:",
+                        c("Dot plot" = "dotplot",
+                        "Gene-concept network" = "cnetplot",
+                        "Enrichment map" = "emapplot",
+                        "Heat map" = "heatplot",
+                        "Ridgeline plot" = "ridgeplot"), selected = 'dotplot')}}
+                        {{bsTooltip("goplots", "Choose a visualization method","right", options = list(container = "body"))}}
+                      </div>
+                    </div>
+                    <hr>
+                    {{plotOutput("goPlot",height = "800px")}}
+                  </div>
+                  <div class="tab-pane fade" id="go_list">
+                    <br>
+                      {{DT::dataTableOutput("table_gores")}}
+                    <br>
+                  </div>
+                  <div class="tab-pane fade" id="go_gsea" style="min-height:500px">
+                    <br>
+                    <div class="row">
+                    <div class="col-xs-4">
+                    {{uiOutput("gsea_geneSetID")}}
+                    </div>
+                    <div class="col-xs-4">
+                    {{selectInput("go_style", "Style:",
+                    choices = c(line='line',
+                    dot='dot'
+                    ),
+                    selected = 'line'
+                    )}}
+                    </div>
+                    </div>
+                    <hr>
+                    {{plotOutput("GSEA_plot")}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> KEGG pathway enrichment analysis</h3>
+              </div>
+              <div class="panel-body" style="min-height: 1000px">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#kegg_Plot" data-toggle="tab">Plot</a></li>
+                  <li><a href="#kegg_list" data-toggle="tab" >KEGG pathway list</a></li>
+                  <li><a href="#kegg_pathview" data-toggle="tab">Pathway visualisation</a></li>
+
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="kegg_Plot">
+                    <div class="row clearfix">
+                      <div class="col-xs-4">
+                        {{sliderInput("showCategory2", "Show category:", value = 10, min = 1, max = 30, step=1)}}
+                        {{bsTooltip("showCategory2", "number of enriched terms to display","right", options = list(container = "body"))}}
+                      </div>
+                      <div class="col-xs-4">
+                        {{selectInput("keggcolorBy", "Color by:",
+                        choices = c(qvalue='qvalue',
+                        pvalue='pvalue',
+                        p.adjust = 'p.adjust'
+                        ),
+                        selected = 'p.adjust'
+                        )}}
+                        {{bsTooltip("gocolorBy2", "variable that used to color enriched terms, e.g. pvalue, p.adjust or qvalue","right", options = list(container = "body"))}}
+                      </div>
+
+                      <div class="col-xs-4">
+                        {{selectInput("keggplots", "KEGG pathway visualization:",
+                        c("Dot plot" = "dotplot",
+                        "Gene-concept network" = "cnetplot",
+                        "Enrichment map" = "emapplot",
+                        "Heat map" = "heatplot",
+                        "Ridgeline plot" = "ridgeplot"), selected = 'dotplot')}}
+                        {{bsTooltip("keggplots", "Choose a visualization method","right", options = list(container = "body"))}}
+
+                      </div>
+                    </div>
+                    <hr>
+                    {{plotOutput("keggPlot",height = "800px")}}
+                  </div>
+                  <div class="tab-pane fade" id="kegg_list">
+                    <br>
+                      {{DT::dataTableOutput("table_keggres")}}
+                  </div>
+                  <div class="tab-pane fade" id="kegg_pathview" style="min-height: 800px">
+                    <br>
+                    {{uiOutput("kegg_pathview")}}
+                    <hr>
+                    {{imageOutput("pathwayView")}}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--6 pseudotime-->
+    <div class="tab-pane fade" id="pseudotime">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i>Trajectory analysis</strong>
+        The goal of this step is to estimate pseudotimes for cells based on their gene expression levels.
+        This problem is also referred to as single-cell trajectories inference or ordering.
+        We use the algorithm in the <code>Monocle 3</code> package to learn the expression patterns of all genes to arrange each cell into its own development trajectory.
+        Monocle 3 is an analysis toolkit for single-cell RNA-Seq experiments.
+
+      </div>
+      <div>
+        <div class="row">
+          <div class="col-xs-3" >
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+
+                {{ radioButtons("use_partition", "use partition:",
+                c("TRUE" = 'TRUE',
+                "FALSE" = 'FALSE'),
+                selected = 'TRUE',
+                inline = TRUE
+                )
+                }}
+                {{bsTooltip("use_partition", "logical parameter that determines whether to use partitions calculated during cluster_cells and therefore to learn disjoint graph in each partition. When FALSE, a single graph is learned across all partitions. Default is TRUE.","right", options = list(container = "body"))}}
+
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Plotting</h4>
+                <!--{{selectInput("color_by6", "color by:",choices = c(State='State',Cluster='cluster',Pseudotime='Pseudotime'),selected = 'State')}}-->
+                {{sliderInput("cell_size6", "cell size:", value = 1, min = 0, max = 5, step=0.1)}}
+                {{bsTooltip("cell_size6", "The size of the point for each cell","right", options = list(container = "body"))}}
+
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_pseudotime', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#differential" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Differential expression analysis</a>
+                </div>
+
+
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_pseudo")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger" style="min-height:800px">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Select Trajectory Roots</h3>
+              </div>
+              <div class="panel-body">
+                <blockquote  class="blocklis" >
+                  <strong>Note:</strong>
+                  Please click [RUN] on the right to run Monocle3, then select the root nodes in the figure below,
+                  and click [Done]. The single-cell trajectories obtained is displayed in the "Result" panel below.
+                </blockquote>
+                <div class="col-xs-8">
+                  {{plotOutput("nodeplot", click = "nodeplot_click", brush = shiny::brushOpts(id = "nodeplot_brush"))}}
+                </div>
+                <div class="col-xs-4">
+                  {{actionButton("choose_toggle","Choose/unchoose")}}
+                  {{actionButton("pseudo_reset","Clear")}}
+                  {{actionButton("pseudo_done", "Done")}}
+                </div>
+              </div>
+            </div>
+
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body">
+                <ul class="nav nav-tabs">
+                  <li class="active">
+                    <a href="#peso_plot" data-toggle="tab">
+                      Trajectory inference
+                    </a>
+                  </li>
+                  <li><a href="#phenoData" data-toggle="tab">list</a></li>
+
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane fade in active" id="peso_plot">
+                    <div class="col-xs-8">
+                      {{uiOutput("pseu_color")}}
+                      {{plotlyOutput("pseudotimePlot1")}}
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="phenoData">
+                    <br>
+                    <div class="panel panel-default bs-callout-top2">
+                      <div class="panel-heading ">
+                        Phenotype Data
+                        {{tags$a(id = "download_pheno", class = "shiny-download-link", style="float:right",href = "",
+                        target = "_blank", download = NA, NULL,icon("cloud-download"))}}
+                        {{bsTooltip("download_pheno", "Download the go enrichment result","left", options = list(container = "body"))}}
+                      </div>
+                      <div class="panel-body">
+                        {{DT::dataTableOutput("table_pheno")}}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!--7 annotation-->
+    <div class="tab-pane fade" id="annotation">
+      <div class="alert alert-warning">
+        <strong><i class="fa fa-sun-o" aria-hidden="true"></i>Cluster annotation</strong>
+        On a gene level, clustered data are analysed by finding the gene signatures of each cluster.
+        These so-called marker genes characterize the cluster and are used to annotate it with a meaningful biological label.
+        This label represents the identity of cells within the cluster. As any clustering algorithm will produce a partition of the data,
+        the validity of the identified clusters can only be determined by successful annotation of the represented biology.
+      </div>
+      <div>
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-sliders" aria-hidden="true"></i> Parameter</h3>
+              </div>
+              <div class="panel-body">
+                <h4><i class="fa fa-cogs" aria-hidden="true"></i> Setting</h4>
+                {{selectInput("species_anno", "Species:",
+                choices = c(
+                "Homo sapiens"="Human",
+                "Mus musculus"="Mouse",
+                "Others"="Others"
+                ),
+                selected = 'Human'
+                )}}
+                {{bsTooltip("species.anno", "The specie of cells.'Human','Mouse' or others.","right", options = list(container = "body"))}}
+
+                {{selectInput("methods_anno", "Annotation Methods:",
+                choices = c(
+                "scCATCH"="scCATCH",
+                "AUCell"="AUCell"
+                ),
+                selected = 'scCATCH'
+                )}}
+                {{conditionalPanel(condition="input.methods_anno=='scCATCH' ",
+                selectInput("tissue.anno", "Tissue:",
+                choices = c(
+                "Adipose tissue"="Adipose tissue",
+                "Bladder"="Bladder",
+                "Blood"='Blood',
+                "Bone"='Bone',
+                "Brain"='Brain',
+                "Blood"='Blood',
+                "Breast"='Breast',
+                "Embryo"='Embryo',
+                "Esophagus"='Esophagus',
+                "Eye"='Eye',
+                "Fetus"='Fetus',
+                "Gonad"='Gonad',
+                "Hair"='Hair',
+                "Bone"='Bone',
+                "Brain"='Brain',
+                "Blood"='Blood',
+                "Breast"='Breast',
+                "Heart"='Heart',
+                "Intestine"='Intestine',
+                "Kidney"='Kidney',
+                "Liver"='Liver',
+                "Lung"='Lung',
+                "Lymph"='Lymph',
+                "Muscle"='Muscle',
+                "Nose"='Nose',
+                "Oral cavity"='Oral cavity',
+                "Ovary"='Ovary',
+                "Pancreas"='Pancreas',
+                "Pancreatic acinar tissue"="Pancreatic acinar tissue",
+                "Pancreatic islet"="Pancreatic islet",
+                "Prostate"='Prostate',
+                "Skin"='Skin',
+                "Spleen"='Spleen',
+                "Stomach"='Stomach',
+                "Testis"='Testis',
+                "Tooth"='Tooth',
+                "Uterus"='Uterus',
+                "Vessel"='Vessel',
+                "Others"='Others'
+                ),
+                selected = 'Pancreas',
+                multiple=TRUE
+                ),
+                checkboxInput("autoMarkers", "Whether to automatically find the most suitable marker genes", TRUE)
+                )}}
+                {{conditionalPanel(condition="input.methods_anno=='AUCell' ",
+                fileInput('file_markers', 'markers.csv')
+                )}}
+
+
+                {{bsTooltip("tissue.anno", "The tissue origin of cells.","right", options = list(container = "body"))}}
+                <div class="row">
+                  <div class="col-md-1 col-md-offset-4">
+                    {{actionButton('btn_annotation', 'RUN', icon=icon('play'), class="btn btn-md btn-danger")}}
+                  </div>
+                </div>
+                <hr>
+                <div>
+                  <a href="#differential" data-toggle="tab" class="btn btn-sm btn-default btn-block"> << PREVIOUS: Differential expression analysis</a>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-warning">
+              <div class="panel-body">
+                {{htmlOutput("info_anno")}}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-9">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Result</h3>
+              </div>
+              <div class="panel-body">
+                <div class="panel panel-default bs-callout-top2">
+                  <div class="nohedding panel-heading ">
+                    <h3 class="panel-title">
+                      Cluster annotation list
+                      {{tags$a(id = "download_anno", class = "shiny-download-link", style="float:right",href = "",
+                      target = "_blank", download = NA, NULL,icon("cloud-download"))}}
+                      {{bsTooltip("download_anno", "Download the full cluster annotation list","left", options = list(container = "body"))}}
+
+                    </h3>
+                  </div>
+                  <div class="panel-body">
+                    {{DT::dataTableOutput("table_anno")}}
+                    <br>
+                  </div>
+                </div>
+                <div class="panel panel-default bs-callout-top1">
+                  <div class="nohedding panel-heading">
+                    <h3 class="panel-title">
+                      Cluster annotation Plot
+                    </h3>
+                  </div>
+                  <div class="panel-body">
+                    {{plotlyOutput("annotation_plot")}}
+                  </div>
+                </div>
+                <div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--TASK-->
+    <div class="tab-pane fade" id="task">
+      <div class="row">
+        <div class="col-xs-3 col-xs-offset-8">
+          {{loginUI("login")}}
+        </div>
+      </div>
+      {{uiOutput("taskitem")}}
+
+    </div>
+
+  </div>
+</div>
+
+<!--========================================================
+                          FOOTER
+=========================================================-->
+<div class="ui inverted vertical footer segment" style='margin-top: 16px; padding-top: 32px;background-color: #153057'>
+    <div class="ui center aligned container">
+        <div class="ui stackable inverted divided three column centered grid">
+            <div class="five wide column">
+                <h4 class="ui inverted header">About BMI Lab</h4>
+                <div class='ui inverted link list'>
+                    <a class='item' href='http://www.bmibig.cn/plantAPAdb/' >PlantAPADB</a>
+                    <a class='item' href='https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-019-5747-5' >scNPF</a>
+                    <a class='item' href='https://academic.oup.com/bioinformatics/article-abstract/36/3/789/5544928?redirectedFrom=fulltext' >scHinter</a>
+                    <a class='item' href='http://plantpolya.org/SAPacBio/' >SAPacBio</a>
+                </div>
+            </div>
+            <div class="five wide column">
+                <h4 class="ui inverted header">Related R Package</h4>
+                <div class='ui inverted link list'>
+                    <a class='item' href='https://shiny.rstudio.com/' >Shiny</a>
+                    <a class='item' href='https://cran.r-project.org/web/packages/Seurat/index.html' >Seurat</a>
+                    <a class='item' href='https://cole-trapnell-lab.github.io/monocle3/' >Monocle3</a>
+                    <a class='item' href='https://github.com/immunogenomics/harmony' >Harmony</a>
+                </div>
+            </div>
+            <div class="five wide column">
+                <h4 class="ui inverted header">Contact Us</h4>
+                <small>We thank you for your support of this platform. If you have any suggestions or comments, you can contact us as follows:</small>
+                <div class='ui inverted link list'>
+                    <a class='item' href="https://github.com/BMILAB" title="https://github.com/BMILAB">
+                        <div class='ui large icon label github-button-colour'>
+                            <i class="fa fa-github" aria-hidden="true"></i> GitHub
+                        </div>
+                    </a>
+                    <a class='item' href = "mailto: szhu520@gmail.com" title="szhu520@gmail.com">
+                        <div class='ui teal large icon label'>
+                            <i class="fa fa-envelope-o" aria-hidden="true"></i> E-mail
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui center aligned container">
+        <p>© Copyright BMI Lab</p>
+    </div>
+
+</div>
+</body>
+
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+</html>
