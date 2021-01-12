@@ -45,5 +45,6 @@ __*It is important that the input file should follow the same format as descibed
 3) Cell markers file,such as: [Pancreas_markers.txt](www/example_data/Pancreas_markers.txt)
 
 
-## Public projects:
-We have uploaded the test data used in PIAS to [Figshare](https://doi.org/10.6084/m9.figshare.13205924). Users can find our database and download it by searching title. Unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS.
+## Load projects:
+We have uploaded the three public projects in PIAS web server to [Figshare](https://doi.org/10.6084/m9.figshare.13205924). Users can find our database and download it by searching title. PIAS web server saves all public projects. If you want to use these items in the local version of PIAS, you need to download the item, unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS local version.
+
