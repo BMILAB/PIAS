@@ -38,12 +38,14 @@ shiny::runUrl(“https://github.com/gangeszs/PIAS/archive/master.zip”)
 ## File format
 __*It is important that the input file should follow the same format as descibed below.*__
 
-1) 
+1) Normal gene expression matrix and metadata file
+   such as: 
+   
+2) Sparse matrix and metadata file
+   such as: 
+3) Cell markers file
+   such as: 
 
 
-## Demo data files:
-
-There is one matrix file for Malignant dataset from Tirosh et al., 2016 (Main file for the analysis) and genes file (For STEP: Discriminating marker genes). 
-
-### Count matrix: Maligant50.csv
-### Genes file: Genes_MITF_AXL.txt
+## Public projects:
+We have uploaded the test data used in PIAS to Figshare. Users can find our database and download it by searching title. Unzip the zip file and move the RData file to www/task/public to load the corresponding project in PIAS.
