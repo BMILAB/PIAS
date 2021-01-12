@@ -114,8 +114,11 @@ server <- function(input, output,session) {
   observe({
     
       runjs('var user_ips= returnCitySN["cip"];Shiny.onInputChange("user_ips",user_ips);')
-      pipelines$username <- input$user_ips
-      #pipelines$username <- "183.252.5.143"
+      
+	  #If you are only using it alone, you do not need to obtain the ip. 
+	  pipelines$username <- "myip"
+	  #If multiple people use and need to distinguish folders by IP, use the following code
+      #pipelines$username <- input$user_ips
     
   })
   
