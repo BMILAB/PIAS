@@ -492,125 +492,147 @@ server <- function(input, output,session) {
   #### >>Normal matrix ####
   #' button "Get file"
   observeEvent(input$btn_expftp, {
-    expFTPurl<- input$expFTPurl
-    
-    metaFTPurl<- input$metaFTPurl
-    
-    message(expFTPurl)
-    
-    withProgress(message = 'downloading the gene expression matrix...', value = 0.4, {
-      
-      if(grepl("https://|ftp://|http://",expFTPurl)){
-        #FTP
-        require("RCurl")
-        mtx <- strsplit(expFTPurl,"/")[[1]]
-        mtx <- mtx[length(mtx)]
-        path1 <- paste0(taskdir,"public/",mtx)
+    tryCatch(
+      {
+        expFTPurl<- input$expFTPurl
         
-        if(!file.exists(path1)){
-          download.file(expFTPurl,path1)
-          if(!file.exists(path1)){
-            uploadFTP$status <- "2"
-            shinyalert("Error!", "File download failed!", type = "error")
+        metaFTPurl<- input$metaFTPurl
+        
+        message(expFTPurl)
+        
+        Info_out$out_upload <- paste0("Getting file!<br>")
+        
+        withProgress(message = 'downloading the gene expression matrix...', value = 0.4, {
+          
+          if(grepl("https://|ftp://|http://",expFTPurl)){
+            #FTP
+            require("RCurl")
+            mtx <- strsplit(expFTPurl,"/")[[1]]
+            mtx <- mtx[length(mtx)]
+            path1 <- paste0(taskdir,"public/",mtx)
+            
+            if(!file.exists(path1)){
+              download.file(expFTPurl,path1)
+              if(!file.exists(path1)){
+                uploadFTP$status <- "2"
+                Info_out$out_upload <- paste0(Info_out$out_upload ,"File download failed!<br>")
+              }
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$exp <- path1
+              setProgress(value = 1,message = paste0('Download ',mtx))
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0(mtx,' downloaded successfully!'))
+            }
+          }else if(grepl("UUID:",expFTPurl)){
+            #UUID
+            uuid <- gsub("UUID:","",expFTPurl)
+            
+            path1 <- paste0(uuiddir,uuid)
+            message(path1)
+            files <- list.files(path1)
+            ms <- grepl("matrix",files)
+            mtx <- c()
+            if(sum(ms) == 1){
+              mtx <- paste0(path1,"/",files[ms])
+            }else{
+              Info_out$out_upload <- paste0(Info_out$out_upload ,"Please make sure that the file group corresponding to the UUID contains a single matrix file!")
+              uploadFTP$status <- 2
+            }
+            
+            if(!file.exists(mtx)){
+              Info_out$out_upload <- paste0(Info_out$out_upload ,"Please make sure the file has been uploaded successfully!")
+              
+              uploadFTP$status <- 2
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$exp <- mtx
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0('Meta downloaded successfully!'))
+              
+            }
+          }else{
+            #Local
+            path1 <- expFTPurl
+            if(!file.exists(path1)){
+              Info_out$out_upload <- "Please ensure that the path contains single matrix file!"
+              return(NULL)
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$exp <- path1
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0('Meta downloaded successfully!'))
+              
+            }
           }
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$exp <- path1
-          setProgress(value =1,message = paste0('Download ',mtx))
-        }
-      }else if(grepl("UUID:",expFTPurl)){
-        #UUID
-        uuid <- gsub("UUID:","",expFTPurl)
-        path1 <- paste0(uuiddir,uuid)
-        files <- list.files(path1)
-        ms <- grepl("matrix",files)
-        mtx <- c()
-        if(sum(ms) == 1){
-          mtx <- paste0(path1,"/",files[ms])
-        }else{
-          Info_out$out_upload <- c("Please make sure that the file group corresponding to the UUID contains a single matrix file!")
-          uploadFTP$status <- 2
-        }
-        if(!file.exists(mtx)){
-          Info_out$out_upload <- c("Please make sure the file has been uploaded successfully!")
-          uploadFTP$status <- 2
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$exp <- mtx
-        }
-      }else{
-        #Local
-        path1 <- expFTPurl
-        if(!file.exists(path1)){
-          Info_out$out_upload <- "Please ensure that the path contains single matrix file!"
-          return(NULL)
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$exp <- path1
-        }
-      }
-    })
-    
-    if(metaFTPurl == ""){
-      return(NULL)
-    }
-    withProgress(message = 'downloading the meta data...', value = 0.4, {
-      if(grepl("https://|ftp://|http://",metaFTPurl)){
-        # 1. FTP
-        require("RCurl")
-        mtx <- strsplit(metaFTPurl,"/")[[1]]
-        mtx <- mtx[length(mtx)]
-        path1 <- paste0(taskdir,"public/",mtx)
+        })
         
-        if(!file.exists(path1)){
-          download.file(metaFTPurl,path1)
-          if(!file.exists(path1)){
-            uploadFTP$status <- "2"
-            shinyalert("Error!", "File download failed!", type = "error")
+        if(metaFTPurl == ""){
+          return(NULL)
+        }
+        withProgress(message = 'downloading the meta data...', value = 0.4, {
+          if(grepl("https://|ftp://|http://",metaFTPurl)){
+            # 1. FTP
+            require("RCurl")
+            mtx <- strsplit(metaFTPurl,"/")[[1]]
+            mtx <- mtx[length(mtx)]
+            path1 <- paste0(taskdir,"public/",mtx)
+            
+            if(!file.exists(path1)){
+              download.file(metaFTPurl,path1)
+              if(!file.exists(path1)){
+                uploadFTP$status <- "2"
+                Info_out$out_upload <- paste0(Info_out$out_upload ,"File download failed!<br>")
+                
+              }
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$meta <- path1
+              setProgress(value =1,message = paste0('Download ',mtx))
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0(mtx,' downloaded successfully!'))
+              
+            }
+          }else if(grepl("UUID:",metaFTPurl)){
+            # 2. UUID
+            uuid <- gsub("UUID:","",metaFTPurl)
+            path1 <- paste0(uuiddir,uuid)
+            files <- list.files(path1)
+            ms <- grepl("meta",files)
+            mtx <- c()
+            if(sum(ms) == 1){
+              mtx <- paste0(path1,"/",files[ms])
+            }else{
+              Info_out$out_upload <- paste0(Info_out$out_upload ,"Please ensure that the path contains single meta file!")
+              return(NULL)
+            }
+            
+            if(!file.exists(mtx)){
+              return(NULL)
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$meta <- mtx
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0(mtx,' downloaded successfully!'))
+              
+            }
+          }else{
+            # 3. Local
+            path1 <- metaFTPurl
+            if(!file.exists(path1)){
+              Info_out$out_upload <- paste0(Info_out$out_upload ,"Please ensure that the path contains single meta file!")
+              
+              return(NULL)
+            }else{
+              uploadFTP$status <- "3"
+              uploadFTP$meta <- path1
+              Info_out$out_upload <- paste0(Info_out$out_upload ,paste0(path1,' downloaded successfully!'))
+              
+            }
           }
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$meta <- path1
-          setProgress(value =1,message = paste0('Download ',mtx))
-        }
-      }else if(grepl("UUID:",metaFTPurl)){
-        # 2. UUID
-        uuid <- gsub("UUID:","",metaFTPurl)
-        path1 <- paste0(uuiddir,uuid)
-        files <- list.files(path1)
-        ms <- grepl("meta",files)
-        mtx <- c()
-        if(sum(ms) == 1){
-          mtx <- paste0(path1,"/",files[ms])
-        }else{
-          Info_out$out_upload <- "Please ensure that the path contains single meta file!"
-          return(NULL)
-        }
-        
-        if(!file.exists(mtx)){
-          return(NULL)
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$meta <- mtx
-        }
-      }else{
-        # 3. Local
-        path1 <- metaFTPurl
-        if(!file.exists(path1)){
-          Info_out$out_upload <- "Please ensure that the path contains single meta file!"
-          return(NULL)
-        }else{
-          uploadFTP$status <- "3"
-          uploadFTP$meta <- path1
-        }
+        })
+      },
+      error = function(e) {
+        Info_out$out_upload <- paste0(Info_out$out_upload,"<p style='color:red'>Stop<br>",safeError(e),"<br>","Failed!</p><br>")
+        return(NULL)
+        #stop(safeError(e))
       }
-    })
-    
-    if(uploadFTP$status == 3){
-      shinyjs::hide("uploadError")
-    }else{
-      shinyjs::show("uploadError")
-    }
+    )
   })
   
   ## >>>Preview ####
@@ -653,11 +675,9 @@ server <- function(input, output,session) {
             scan1 <- function(what, ...) scan(filepath, nmax = 1, what = what, 
                                               quiet = TRUE, ...)
             if (scan1(character()) == "%%MatrixMarket"){
-              shinyjs::show("uploadError")
               Info_out$out_upload <- c("file is a Sparse Matrix file! Please go to 'Data Format 2: Sparse matrix' tab to load the data.")
               return(NULL)
             }else{
-              shinyjs::hide("uploadError")
               scRNA.table<- fread(filepath, sep = input$sep1,header = header1, quote=input$quote1,check.names=FALSE)
               
             }
@@ -731,94 +751,114 @@ server <- function(input, output,session) {
   #### >>Sparse matrix ####
   # button "Get file"
   observeEvent(input$btn_ftp, {
-    url<- input$FTPurl
-    
-    message(url)
-    withProgress(message = 'downloading the files...', value = 0.4, {
-      if(grepl("https://|ftp://|http://",url)){
-        #FTP
-        #res<- download_FTP(url,taskdir)
+    tryCatch(
+      {
+        url<- input$FTPurl
         
-        url <- gsub("https://","",url)
-        url <- gsub("http://","",url)
-        
-        #1 判断是否存在
-        public <- paste0(taskdir,"public/")
-        
-        dirlists <- getURL(url,verbose=F,ftp.use.epsv=F,dirlistonly = T)
-        getfiles <- unlist(strsplit(dirlists,"\n",fixed = T))
-        
-        t1 <- sum(grepl("matrix.mtx.gz",getfiles))
-        t2 <- sum(grepl("barcodes.tsv.gz",getfiles))
-        t3 <- sum(grepl("genes.tsv.gz",getfiles))
-        t4 <- sum(grepl("features.tsv.gz",getfiles))
-        
-        if(t1==1 && t2==1 && (t3==1 || t4 ==1)){
-          mtx <- getfiles[grepl("matrix.mtx.gz",getfiles)]
-          barcodes <- getfiles[grepl("barcodes.tsv.gz",getfiles)]
-          if(t3 == 1){
-            genes <- getfiles[grepl("genes.tsv.gz",getfiles)]
-          }else if(t4 == 1){
-            genes <- getfiles[grepl("features.tsv.gz",getfiles)]
-          }
-          GSM <- unlist(strsplit(mtx,"-"))[1]
-          
-          filepath <- paste0(public,GSM)
-          
-          if(!file.exists(filepath)){
-            #not exist-download
-            dir.create(file.path(filepath),recursive = TRUE)
-            withProgress(message = 'downloading the matrix...', value = 0.2, {
-              download.file(paste0(url,mtx),paste0(filepath,"/matrix.mtx.gz"))
-            })
-            withProgress(message = 'downloading the barcodes...', value = 0.4, {
-              download.file(paste0(url,barcodes),paste0(filepath,"/barcodes.tsv.gz"))
-            })
-            withProgress(message = 'downloading the genes...', value = 0.8, {
-              download.file(paste0(url,genes),paste0(filepath,"/genes.tsv.gz"))
-            })
-          }
-          
-          if(file.exists(paste0(filepath,"/matrix.mtx.gz")) && 
-             file.exists(paste0(filepath,"/barcodes.tsv.gz")) &&
-             file.exists(paste0(filepath,"/genes.tsv.gz"))){
+        Info_out$out_upload <- paste0("Connecting URL: ",url,"<br>")
+        withProgress(message = 'downloading the files...', value = 0.4, {
+          if(grepl("https://|ftp://|http://",url)){
+            #FTP
+            #res<- download_FTP(url,taskdir)
             
+            url <- gsub("https://","",url)
+            url <- gsub("http://","",url)
+            
+            #1 判断是否存在
+            public <- paste0(taskdir,"public/")
+            
+            dirlists <- getURL(url,verbose=F,ftp.use.epsv=F,dirlistonly = T)
+            getfiles <- unlist(strsplit(dirlists,"\n",fixed = T))
+            
+            t1 <- sum(grepl("matrix.mtx.gz",getfiles))
+            t2 <- sum(grepl("barcodes.tsv.gz",getfiles))
+            t3 <- sum(grepl("genes.tsv.gz",getfiles))
+            t4 <- sum(grepl("features.tsv.gz",getfiles))
+            
+            if(t1==1 && t2==1 && (t3==1 || t4 ==1)){
+              mtx <- getfiles[grepl("matrix.mtx.gz",getfiles)]
+              barcodes <- getfiles[grepl("barcodes.tsv.gz",getfiles)]
+              if(t3 == 1){
+                genes <- getfiles[grepl("genes.tsv.gz",getfiles)]
+              }else if(t4 == 1){
+                genes <- getfiles[grepl("features.tsv.gz",getfiles)]
+              }
+              GSM <- unlist(strsplit(mtx,"-"))[1]
+              
+              filepath <- paste0(public,GSM)
+              
+              if(file.exists(paste0(filepath,"/matrix.mtx.gz")) && 
+                 file.exists(paste0(filepath,"/barcodes.tsv.gz")) &&
+                 file.exists(paste0(filepath,"/genes.tsv.gz"))){
+                
+                uploadFTP$status <- 3
+                uploadFTP$path <- filepath
+              }else{
+                #not exist-download
+                if(!file.exists(filepath)){
+                  dir.create(file.path(filepath),recursive = TRUE)
+                }
+                withProgress(message = 'downloading the matrix...', value = 0.2, {
+                  
+                  Info_out$out_upload <- paste0(Info_out$out_upload,"Downloading file: ",paste0(url,mtx),"<br>")
+                  
+                  download.file(paste0(url,mtx),paste0(filepath,"/matrix.mtx.gz"))
+                })
+                withProgress(message = 'downloading the barcodes...', value = 0.4, {
+                  Info_out$out_upload <- paste0(Info_out$out_upload,"Downloading file: ",paste0(url,barcodes),"<br>")
+                  
+                  download.file(paste0(url,barcodes),paste0(filepath,"/barcodes.tsv.gz"))
+                })
+                withProgress(message = 'downloading the genes...', value = 0.8, {
+                  Info_out$out_upload <- paste0(Info_out$out_upload,"Downloading file: ",paste0(url,genes),"<br>")
+                  
+                  download.file(paste0(url,genes),paste0(filepath,"/genes.tsv.gz"))
+                })
+                
+                if(file.exists(paste0(filepath,"/matrix.mtx.gz")) && 
+                   file.exists(paste0(filepath,"/barcodes.tsv.gz")) &&
+                   file.exists(paste0(filepath,"/genes.tsv.gz"))){
+                  
+                  uploadFTP$status <- 3
+                  uploadFTP$path <- filepath
+                }else{
+                  Info_out$out_upload <- paste0(Info_out$out_upload,"File download failed!<br>")
+                  
+                  uploadFTP$status <- 2
+                }
+              }
+            }else{
+              Info_out$out_upload <- "Please ensure that the ftp link contains single matrix.mtx(.gz),barcodes.tsv(.gz) and features.tsv(.gz) / genes.tsv(.gz)!"
+              uploadFTP$status <- 1
+            }
+          }else if(grepl("UUID:",url)){
+            #UUID
+            uuid <- gsub("UUID:","",url)
+            path1 <- paste0(uuiddir,uuid)
+            files <- list.files(path1)
             uploadFTP$status <- 3
-            uploadFTP$path <- filepath
+            uploadFTP$path <- path1
           }else{
-            Info_out$out_upload <- "File download failed!"
-            uploadFTP$status <- 2
+            #Local
+            path1 <- url
+            if(!file.exists(path1)){
+              Info_out$out_upload <- "Please ensure that the path contains single matrix.mtx(.gz),barcodes.tsv(.gz) and features.tsv(.gz) / genes.tsv(.gz)!"
+              return(NULL)
+            }else{
+              uploadFTP$status <- 3
+              uploadFTP$path <- path1
+            }
           }
-        }else{
-          Info_out$out_upload <- "Please ensure that the ftp link contains single matrix.mtx(.gz),barcodes.tsv(.gz) and features.tsv(.gz) / genes.tsv(.gz)!"
-          uploadFTP$status <- 1
-        }
-      }else if(grepl("UUID:",url)){
-        #UUID
-        uuid <- gsub("UUID:","",url)
-        path1 <- paste0(uuiddir,uuid)
-        files <- list.files(path1)
-        uploadFTP$status <- 3
-        uploadFTP$path <- path1
-      }else{
-        #Local
-        path1 <- url
-        if(!file.exists(path1)){
-          Info_out$out_upload <- "Please ensure that the path contains single matrix.mtx(.gz),barcodes.tsv(.gz) and features.tsv(.gz) / genes.tsv(.gz)!"
-          return(NULL)
-        }else{
-          uploadFTP$status <- 3
-          uploadFTP$path <- path1
-        }
+          
+          setProgress(value =1,message = 'Finished! Wait to preview the data')
+        })
+      },
+      error = function(e) {
+        Info_out$out_upload <- paste0(Info_out$out_upload,"<p style='color:red'>Stop<br>",safeError(e),"<br>","Failed!</p><br>")
+        return(NULL)
+        #stop(safeError(e))
       }
-      if(uploadFTP$status == 3){
-        shinyjs::hide("uploadError")
-      }else{
-        shinyjs::show("uploadError")
-      }
-      
-      setProgress(value =1,message = 'Finished! Wait to preview the data')
-    })
+    )
   })
   
   ## >>>Preview ####
@@ -984,9 +1024,6 @@ server <- function(input, output,session) {
       # create the dataset
       pisasObj <- new("PISASDS", name = input$DSName, format=daFormat,species = input$species,protocols = input$protocols,
                       description=input$description,create.time = create.time,count = scRNA.table,meta = primer.meta)
-
-      shinyalert("Warning!", "2!", type = "warning")
-
       saveRDS(pisasObj,file=paste0(filepath,"/",input$DSName,".Rds"))
 
       # add the dataset list

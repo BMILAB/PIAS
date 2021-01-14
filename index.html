@@ -71,7 +71,9 @@
 
     <!--0 uploadData-->
     <div class="tab-pane fade in active" id="uploadData">
-<!--      alert-->
+      <div class="alert alert-danger"><p style="font-weight: bold;font-style: italic">RECOMMEND!</p> Get PIAS: <a href="https://github.com/BMILAB/PIAS" target="_blank">https://github.com/BMILAB/PIAS</a></div>
+
+      <!--      alert-->
       <div class="alert alert-warning">
         <strong><i class="fa fa-sun-o" aria-hidden="true"></i> Create Project</strong>
         Users can use public projects or upload data sets in this step to create personal projects.
@@ -88,7 +90,7 @@
             If you are using the platform for the first time, please run the public project first.
             Load the example of your choice though [Stored Project] - [Public Projects] - [Load].
             If you already know how to do this, you can upload new datasets. It is worth noting that you are guaranteed
-            to upload the same data <a href="http://127.0.0.1/PIAS/help.htm#dataformat" target="_blank" style="color: darkred">format</a> as we
+            to upload the same data <a href="http://bigbio.xmu.edu.cn/PIAS/help.htm#dataformat" target="_blank" style="color: darkred">format</a> as we
             requested. After uploading the dataset, you can add them to create a new projects.
           </blockquote>
           <ul class="nav nav-tabs" id="dataTab">
@@ -264,14 +266,22 @@
             </div>
             <div class="tab-pane fade" id="newdata">
               <br>
+              <div class="alert alert-info"  style="color:blue">
+                <div>
+                  <strong style="color: indianred">Tips: </strong> If you have clicked the "Get Files" button, but the preview window does not display data.
+                  It means that the current network environment of the server may be bad, you can download these files yourself and upload them.
+                </div>
+                <div id = "uploadError" style="color: indianred">
+                  {{htmlOutput("fileMes")}}
+                </div>
+              </div>
+              <br>
               <div class="panel panel-default">
                 <div class="nohedding panel-heading">
                   Data format selection
                 </div>
                 <div class="panel-body">
-                  <div class="alert alert-info" id = "uploadError" style="display: none;color: indianred">
-                    <strong style="color: indianred">Error: </strong>{{textOutput("fileMes")}}
-                  </div>
+
                   <ul class="nav nav-tabs" id="dataType">
                     <li class="active">{{actionLink(
                       inputId = "data_format1",
@@ -319,13 +329,13 @@
                         </div>
                       </div>
 
-                      <div class="row clearfix" id="expurl" style="display: none;height: 100px">
+                      <div class="row clearfix" id="expurl" style="display: none;">
                         <div class="col-xs-6">
-                          {{textInput("expFTPurl","Genes expression data URL:",value="",width="450px",placeholder = "Such as ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz")}}
+                          {{textInput("expFTPurl","Genes expression data URL:",value="",width="450px",placeholder = "Such as ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz")}}
                           {{bsTooltip("expFTPurl", "Please ensure that the ftp link only contains one genes expression matrix!","right", options = list(container = "body"))}}
                         </div>
                         <div class="col-xs-5">
-                          {{textInput("metaFTPurl","Meta-data URL(Optional):",value="",width="450px",placeholder = "Such as ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz")}}
+                          {{textInput("metaFTPurl","Meta-data URL(Optional):",value="",width="450px",placeholder = "")}}
                           {{bsTooltip("metaFTPurl", "Please ensure that the ftp link only contains one metadata matrix!","right", options = list(container = "body"))}}
                         </div>
 
@@ -333,6 +343,15 @@
                           <br>
                           {{actionButton('btn_expftp', 'Get Files',class="btn btn-md btn-success")}}
                         </div>
+                        <div class="col-xs-12">
+                          <span>e.g.</span> <span class="label label-primary">ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123818/suppl/GSE123818_Root_single_cell_shr_datamatrix.csv.gz</span>
+
+                          <span class="label label-primary">UUID:1xZ1StqLS</span>
+                          <br>
+                          <span>(Copy the content in the label and paste it into the input box above. If it is an ftp path, you need to ensure that the path contains the file name.
+                            If it is UUID, ensure that the file name contains "matrix" and "meta")</span>
+                        </div>
+                        <br>
                       </div>
 
                       <div>
@@ -427,6 +446,10 @@
                           <br>
                           {{actionButton('btn_ftp', 'Get Files',class="btn btn-md btn-success")}}
                         </div>
+                        <div class="col-xs-12">
+                          e.g. <span class="label label-primary">ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2510nnn/GSM2510617/suppl/</span>
+                               <span class="label label-primary">UUID:EIk3Fz6tt</span> (Copy the content in the label and paste it into the input box above)
+                        </div>
                       </div>
                       <div class="row clearfix">
                         <div class="col-xs-3">
@@ -515,7 +538,7 @@
         </div>
       </div>
 <!--      Result-->
-      <div class="panel panel-danger">
+      <div class="panel panel-success">
         <div class="panel-heading">
           <h3 class="panel-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> Analysis Results</h3>
         </div>
@@ -616,8 +639,7 @@
                 <hr>
 
                 <h4><i class="fa fa-cogs" aria-hidden="true"></i> Batch Effects</h4>
-                {{selectInput("batchEffect", "Batch effects:",choices = c(none="none",
-                ScaleData ="ScaleData",
+                {{selectInput("batchEffect", "Batch effects:",choices = c(ScaleData ="ScaleData",
                 Combat="Combat"
                 ),
                 selected = "ScaleData"
@@ -1990,17 +2012,6 @@
         </div>
       </div>
     </div>
-    <!--TASK-->
-    <div class="tab-pane fade" id="task">
-      <div class="row">
-        <div class="col-xs-3 col-xs-offset-8">
-          {{loginUI("login")}}
-        </div>
-      </div>
-      {{uiOutput("taskitem")}}
-
-    </div>
-
   </div>
 </div>
 
