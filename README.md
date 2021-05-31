@@ -35,6 +35,10 @@ devtools::install_github("rstudio/shiny", dependencies=FALSE)
 shiny::runUrl("https://github.com/BMILAB/PIAS/archive/master.zip")
 ```
 
+## Public data
+When running the local version of PIAS, you need to move the public data to the www/task/public folder, where you can download the public data set: https://doi.org/10.6084/m9.figshare.13205924. The list after the move is as follows:
+<img src=public.png>
+
 ## File format
 __*It is important that the input file should follow the same format as descibed below.*__
 
