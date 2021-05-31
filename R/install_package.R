@@ -48,9 +48,9 @@ if(!pkg %in% installed.packages()[, "Package"]){
 }
 require(pkg,character.only = TRUE)
 
-pkg <- "liger"
+pkg <- "rliger"
 if(!pkg %in% installed.packages()[, "Package"]){
-  devtools::install_github('MacoskoLab/liger',dependencies=FALSE)
+  devtools::install_github('welch-lab/liger',dependencies=FALSE)
   
 }
 require(pkg,character.only = TRUE)
