@@ -35,6 +35,15 @@ warn <- function(text, ...)
   cat(sprintf(paste(Sys.time(),"WARN:", text,"\n")))
 }
 
+## ip2long
+ip2long <- function(ip)
+{
+  ips <-  unlist(strsplit(as.character(ip),"[.]"))
+  
+  long <- as.numeric(ips[1])*256^3 + as.numeric(ips[2])*256^2 +as.numeric(ips[3])*256 +as.numeric(ips[4])
+  return(long)
+}
+
 ### Compute TPM expression values from raw UMI counts
 tpm <- function(counts, mult=10000)
 {
@@ -314,7 +323,7 @@ plot_umap <- function(reduce_var,groups,title=NULL,colorbar_name=NULL){
     groups <- as.factor(groups)
   }
   cols <- colnames(reduce_var)
-  fig <- plot_ly(x = reduce_var[,1], y = reduce_var[,2], color =  groups, colors = colors,text=rownames(reduce_var),marker = list(size = 2.5))
+  fig <- plot_ly(x = reduce_var[,1], y = reduce_var[,2], color =  groups, colors = colors,text=rownames(reduce_var),marker = list(size = 3))
   
   fig <- fig %>% add_markers() %>% colorbar(title = colorbar_name)
   fig <- fig %>% layout(title=title,
@@ -392,7 +401,7 @@ estimate.ARI <- function(data,batch){
 }
 
 estimate.CH <- function(data,batch){
-  library(fpc)
+  
   res <- fpc::calinhara(as.data.frame(data),as.numeric(as.factor(batch$project.PIAS)))
   
   res <-  round(res,digits=2)
@@ -868,6 +877,7 @@ FoldNames <- function(ids,obj){
   obj <- RenameIdents(object = obj, ids)
   return(as.character(obj@active.ident))
 }
+
 
 LoadOrgDB <- function(species){
   if(species == "Homo sapiens")
