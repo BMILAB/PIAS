@@ -1,11 +1,4 @@
-sourceDir <- function(path, trace = TRUE, ...) {
-  for (nm in list.files(path, pattern = '*.R')) {
-    message(nm)
-    source(file.path(path, nm), ...)
-  }
-}
-
-sourceDir(path = 'R',encoding = 'UTF-8')
+source(R/install_package.R)
 
 library(Matrix)
 library(Seurat)
@@ -27,7 +20,7 @@ library(shinyalert)
 library(glue)
 library(shinyBS)
 library(DBI)
-library(RMariaDB)
+#library(RMariaDB)
 library(openssl)
 #library(enrichplot)
 library(SingleCellExperiment)
@@ -44,12 +37,20 @@ library(reactable)
 library(RCurl)
 library(shinyBS)
 library(htmltools)
-options(shiny.maxRequestSize=5000*1024^2,shiny.sanitize.errors = TRUE)
+options(shiny.maxRequestSize=5000*1024^2,shiny.sanitize.errors = FALSE)
 #memory.limit(10000000)
 #--load function ---
+sourceDir <- function(path, trace = TRUE, ...) {
+  for (nm in list.files(path, pattern = '*.R')) {
+    message(nm)
+    source(file.path(path, nm), ...)
+  }
+}
+
+sourceDir(path = 'R',encoding = 'UTF-8')
 
 taskdir <- paste0(getwd(),"/www/task/")
-uuiddir <- "/home/bmilab/data1/www/html/PIAS/webupload/server/upload/"
+uuiddir <- "/var/www/html/PIAS/webuploader/server/upload/"
 
 ##--UI---------------------------------------------
 ui <- bootstrapPage(
@@ -108,25 +109,73 @@ server <- function(input, output,session) {
   VaryPro <- reactiveValues(total = 0)
   VaryDS <- reactiveValues(total = 0)
   VaryDT <- reactiveValues(total = 0)
-  Info_out <- reactiveValues(out_pro=c(),out_int=c(),out_dim=c())
+  Info_out <- reactiveValues(out_pro=c(),out_int=c(),out_dim=c(),out_file=c())
   
   ## Status --------------------------------------------------
   observe({
     
+    query <- parseQueryString(session$clientData$url_search)
+    #query <- parseQueryString("?o=6&x=0721e004f7aad93c29bbfa95c2f26602")
+    
+    #login
+    if (!is.null(query[['x']])) {
+      memid <- query[['x']]
+      uuid <- query[['u']]
+      style <- as.numeric(query[['s']])
+      
+      memid2 <- as.numeric(memid)
+      uuid2 <- as.character(uuid)
+      # nres <- checklogin(memid2,pass)
+      
+      if(!is.na(memid2)){
+        shinyjs::show("exbut")
+        pipelines$username <<- memid2
+        # shinyalert("Thanks!", "You have successfully logged in!", type = "success")
+      }else{
+        # shinyalert("Note!", "User does not exist, please register first! You will log in with ip!", type = "success")
+      }
+      
+      if(!is.na(uuid2) && !is.na(style)){
+        if(style == 1){
+          updateTextInput(
+            session = session,
+            inputId = "expFTPurl",
+            value = paste0("UUID:",uuid2)
+          )
+        }else if(style==2){
+          updateTextInput(
+            session = session,
+            inputId = "FTPurl",
+            value = paste0("UUID:",uuid2)
+          )
+        }
+      }
+    }else{
+      #shinyalert("Note!", "You are logging in as guest mode and will log in as ip!", type = "success")
+      shinyjs::hide("exbut")
+      
+    }
+    
+    if(is.null(pipelines$username)){
+      
       runjs('var user_ips= returnCitySN["cip"];Shiny.onInputChange("user_ips",user_ips);')
       
-	  #If you are only using it alone, you do not need to obtain the ip. 
-	  pipelines$username <- "myip"
-	  #If multiple people use and need to distinguish folders by IP, use the following code
-      #pipelines$username <- input$user_ips
-    
+      #If you are only using it alone, you do not need to obtain the ip. 
+      #pipelines$username <<- "myip"
+      #If multiple people use and need to distinguish folders by IP, use the following code
+      
+      pipelines$username <<- ip2long(input$user_ips)
+      
+      if(is.null(input$user_ips)) pipelines$username <<- "local"
+      
+    }
   })
   
   output$users <- renderText({
     return(pipelines$username)
   })
   
- 
+  
   
   shinyInput = function(FUN, len, id, label = NULL,...) {
     inputs = character(len)
@@ -299,7 +348,7 @@ server <- function(input, output,session) {
   
   output$proTab <- DT::renderDataTable(ProList(), server = FALSE, escape = FALSE, selection = 'none')
   
-  ## >>Load project ----
+  ## >> Load project ----
   
   observeEvent(input$loadPro, {
     load_ids <- unlist(strsplit(input$loadPro, "_"))[2]
@@ -336,7 +385,7 @@ server <- function(input, output,session) {
     shinyalert("OK!", "The project has been loaded successfully", type = "success")
   })
   
-  ## >>Delete projest ----
+  ## >> Delete projest ----
   observeEvent(input$delPro, {
     load_ids <- input$delPro
     username <- pipelines$username
@@ -372,16 +421,16 @@ server <- function(input, output,session) {
     shinyalert("OK!", "The project has been deleted successfully", type = "success")
   })
   
-  ## >>Export Project ----
+  ## >> Export Project ----
   global <- reactiveValues(response = FALSE,load_ids=c(),ProRds=NULL)
   
-
+  
   observeEvent(input$exPro, {
     username <- pipelines$username
     load_ids <- unlist(strsplit(input$exPro, "_"))[2]
-
+    
     withProgress(message = 'Load the public data', value = 0.1, {
-
+      
       prodir <- paste0("www/task/",username,"/project/",load_ids,".RData")
       
       incProgress(0.4, detail = "Load the project")
@@ -410,7 +459,7 @@ server <- function(input, output,session) {
       
     })
   })
-
+  
   observeEvent(global$response,{
     if(global$response){
       shinyjs::runjs("document.getElementById('download_export').click();")
@@ -419,7 +468,6 @@ server <- function(input, output,session) {
   })
   
   output$download_export <- downloadHandler(
-    
     
     filename = function() {
       paste0(global$load_ids,".Rds")
@@ -431,9 +479,9 @@ server <- function(input, output,session) {
     }
   )
   
-
   
-  #--------------->Upload New Files-------------------------------------
+  
+  #---------------> Upload New Files-------------------------------------
   
   observeEvent(input$data_format1, {
     daFormat <<- "exp"
@@ -489,7 +537,7 @@ server <- function(input, output,session) {
     Info_out$out_upload
   })
   
-  #### >>Normal matrix ####
+  #### >> Normal matrix ####
   #' button "Get file"
   observeEvent(input$btn_expftp, {
     tryCatch(
@@ -635,7 +683,7 @@ server <- function(input, output,session) {
     )
   })
   
-  ## >>>Preview ####
+  ## >>> Preview ####
   
   exp.gal <- data.table()
   
@@ -748,7 +796,7 @@ server <- function(input, output,session) {
     return(DT::datatable(primer, options = list(orderClasses = TRUE,scrollX = TRUE)))
   })
   
-  #### >>Sparse matrix ####
+  #### >> Sparse matrix ####
   # button "Get file"
   observeEvent(input$btn_ftp, {
     tryCatch(
@@ -861,17 +909,18 @@ server <- function(input, output,session) {
     )
   })
   
+  
   ## >>>Preview ####
   # mtx
   output$tab10x_matrix <- DT::renderDataTable({
     withProgress(message = 'Preview the data\n', value = 0.5, {
-     
+      
       if(input$way2 == "Local"){
         
         if(is.null(input$file10xm)){return(NULL)}
-       
+        
         matrix.mtx<- readMM(input$file10xm$datapath)
-
+        
       }else{
         
         if(uploadFTP$path!="" && uploadFTP$status == "3"){
@@ -966,8 +1015,8 @@ server <- function(input, output,session) {
           
         }
       }
-      filepath <- paste0(taskdir,username)
-      filepath10x <- paste0(taskdir,username,"/x10tmp/")
+      filepath <- paste0("www/task/",username)
+      filepath10x <- paste0("www/task/",username,"/x10tmp/")
       
       if (!(file.exists(filepath))){
         dir.create(file.path(filepath),recursive = TRUE)
@@ -985,7 +1034,6 @@ server <- function(input, output,session) {
           return(NULL)
         }
         scRNA.table <- As.DF(exp.gal)
-        
       }else if(daFormat == "10x"){
         
         if (input$way2 == "Local"){
@@ -1014,18 +1062,17 @@ server <- function(input, output,session) {
         #file.remove(filepath10x)
       }
       primer.meta <- meta.gal
-
+      
       setProgress(value = 0.7,detail="Storing the dataset ...")
       
       saveRDS(dslist,file=list)
-      
       VaryDT$total <- VaryDT$total +1
       
       # create the dataset
-      pisasObj <- new("PISASDS", name = input$DSName, format=daFormat,species = input$species,protocols = input$protocols,
+      pisasObj <- new("PISASDS", name = input$DSName, format=daFormat ,species = input$species,protocols = input$protocols,
                       description=input$description,create.time = create.time,count = scRNA.table,meta = primer.meta)
       saveRDS(pisasObj,file=paste0(filepath,"/",input$DSName,".Rds"))
-
+      
       # add the dataset list
       setProgress(value = 0.9,detail="refreshing the database...")
       
@@ -1185,7 +1232,7 @@ server <- function(input, output,session) {
           dsinfo.1 <- data.frame(ID = i,Name=name,Groups=ncol(metadata),Step="Raw",
                                  Cells=ncol(expdata),Genes=nrow(expdata),
                                  Status = "",Preprocessing ="",
-                               stringsAsFactors = FALSE
+                                 stringsAsFactors = FALSE
           )
           dsinfo.2 <- data.frame(ID = i,Name=name,Groups=ncol(metadata),Step="Preprocessed",
                                  Cells="-",Genes="-",
@@ -1255,12 +1302,11 @@ server <- function(input, output,session) {
                           
                         ))
     
-    # path <- paste0(getwd(),"/www/js/") # folder containing dataTables.rowsGroup.js
-    # dep <- htmltools::htmlDependency(
-    #   "RowsGroup", "2.0.0", 
-    #   path, script = "dataTables.rowsGroup.js")
-    # dtable$dependencies <- c(dtable$dependencies, list(dep))
-    
+    path <- paste0(getwd(),"/www/js/") # folder containing dataTables.rowsGroup.js
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0",
+      path, script = "dataTables.rowsGroup.js")
+    dtable$dependencies <- c(dtable$dependencies, list(dep))
     
     return(dtable)
   })
@@ -1290,12 +1336,9 @@ server <- function(input, output,session) {
     
     output$preview_gnames <- renderPrint({
       
-      s <- as.character.Array(gnames)
-      
-      if (length(s)) {
-        cat(s,sep = ",")
-        cat("...")
-      }
+      s <- paste(gnames, collapse = ",")
+      cat(s)
+      cat("...")
     })
   })
   
@@ -1353,7 +1396,7 @@ server <- function(input, output,session) {
       return()
     cur_proid <- cur_proids()
     PISAS_pro <- PISAS_syn$PISAS_pro
-
+    
     isy <- PISAS_pro@dataset.list$ID==cur_proid & PISAS_pro@dataset.list$Step =="Raw"
     nmax <- PISAS_pro@dataset.list$Genes[isy]
     n <- 2000
@@ -2090,7 +2133,7 @@ server <- function(input, output,session) {
           }else{
             curpro <- PISAS_pro@pro.result[[i]]
           }
-
+          
           if(PISAS_pro@array[[i]]@species != "Homo sapiens"){
             
             inTax <- db$tax_id[db$name_txt == PISAS_pro@array[[i]]@species]
@@ -2117,7 +2160,7 @@ server <- function(input, output,session) {
       PISAS_pro@integrate$inte.genes<-inte.genes
       withProgress(message = 'Integrating \n', value = 0.1, {
         disable("btn_marge")
-
+        
         #ori.scRNAs <- PISAS_pro@pro.result
         #PISAS_pro@pro.result <- list()
         
@@ -2219,7 +2262,7 @@ server <- function(input, output,session) {
           PISAS_pro@integrate[["Combind"]]@reductions$Seurat3_pca <- data.integrated@reductions$pca
           
           PISAS_pro@integrate[["Combind"]]@assays$integrated <- data.integrated@assays$integrated
-
+          
         }else if(input$integ_func == "mnnCorrect"){
           
           setProgress(value = 0.6, detail = "Integrate data by mnnCorrect(~4 mins)...")
@@ -2228,6 +2271,7 @@ server <- function(input, output,session) {
           
           features <- SelectIntegrationFeatures(object.list = object.list,features = 2000)
           object.list <- ReOrder(object.list,features)
+          
           mnns <- RunFastMNN(object.list = object.list,k=20)
           
           setProgress(value = 0.8, detail = "UMAP dimension reduction...")
@@ -2243,12 +2287,12 @@ server <- function(input, output,session) {
           Key(PISAS_pro@integrate[["Combind"]][["mnn_umap"]])<- "UMAP_"
           DimPlot(mnns,reduction = "umap",group.by = "project.PIAS")
           setProgress(value = 0.9, detail = "Create integrate object...")
-
+          
         }else if(input$integ_func == "Harmony"){
           require(harmony)
           
           setProgress(value = 0.6, detail = "Integrate data by Harmony(~2 mins)...")
-
+          
           mergeObj <- mergeObj %>% 
             RunHarmony("project.PIAS", plot_convergence = FALSE)
           
@@ -2257,7 +2301,7 @@ server <- function(input, output,session) {
           Info_out$out_int <- paste0(Info_out$out_int,"Integrate data by Harmony...(cost ",round(t4-t3,2)," secs)<br>")
           
           mergeObj <- RunUMAP(mergeObj, reduction = "harmony",dims = 1:ncol(mergeObj[["harmony"]]),reduction.name = "harmony_umap")
-
+          
           Key(mergeObj[["harmony_umap"]])<- "UMAP_"
           #DimPlot(mergeObj,reduction = "harmony_umap",group.by = "project.PIAS")
           setProgress(value = 0.9, detail = "Create integrate object...")
@@ -2349,7 +2393,6 @@ server <- function(input, output,session) {
   })
   
   output$plot_venn <- renderPlot({
-    library(venn)
     if(is.null(PISAS_syn$PISAS_pro)){
       return(NULL)
     }
@@ -2538,7 +2581,6 @@ server <- function(input, output,session) {
       return(NULL)
     }
     withProgress(message = 'LISI', value = 0.5, {
-      library(lisi)
       PISAS_pro <- PISAS_syn$PISAS_pro
       
       ori_obj <- PISAS_pro@integrate[["Combind"]]
@@ -2892,6 +2934,25 @@ server <- function(input, output,session) {
   
   output$info_dim<-renderText(Info_out$out_dim)
   
+  output$choose_intfunc2 <- renderUI({
+    if(is.null(PISAS_syn$PISAS_pro)){
+      return(NULL)
+    }
+    PISAS_pro <- PISAS_syn$PISAS_pro
+    if(is.null(PISAS_pro)) return()
+    if(PISAS_pro@type=="Single"){
+      group_lists <- list("Single")
+    }else{
+      group_lists <- list()
+      for (i in 1:length(Integs)) {
+        if(Integs[i] %in% names(PISAS_pro@integrate$Combind)){
+          group_lists <- c(group_lists,InFuncs[i])
+        }
+      }
+    }
+    selectInput("cho_mes2", "Integrated methods:",group_lists,selected = sel_intfunc)
+  })
+  
   output$campSelector2 <- renderUI({
     
     if(is.null(PISAS_syn$PISAS_pro)) return()
@@ -2920,36 +2981,68 @@ server <- function(input, output,session) {
       
       scRNA <- PISAS_pro@integrate[["Combind"]]
       step <- PISAS_pro@step
-      
       withProgress(message = 'Calculating the data', value = 0.1, {
-        
         setProgress(0.4)
         withProgress(message = 'Dimension reduction:PCA', detail = "This may take a while...", value = 7, {
           pcs.use <- 1:input$pcs.compute
           Info_out$out_dim <- c("<h3>Dimension reduction</h3>")
           
-          scRNA <- RunPCA(scRNA, features = VariableFeatures(object = scRNA),verbose = F)
+          type <- PISAS_pro@type
           
-          Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by PCA...<br>")
-          
-          #is tsne
-          if(input$dimfunc == "tSNE"){
-            Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by TSNE...<br>")
+          if(type == "Multiple"){
+            n <- grep(input$cho_mes2,InFuncs)
+            nsid <- Indts[n]
+            redt <- Embeddings(scRNA,reduction = nsid)
+            if(nsid == "Seurat3_pca") nsid = "Seurat3"
+            #is tsne
+            if(input$dimfunc == "tSNE"){
+              Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by TSNE...<br>")
+              
+              redt1 <- RunTSNE(object = redt, dims.use = pcs.use, do.fast = TRUE,
+                               perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=2)
+              
+              reid <- paste0(nsid,"_tsne")
+              scRNA@reductions[[reid]] <- redt1
+              
+              redt2 <- RunTSNE(object = redt, dims.use = pcs.use, do.fast = TRUE,
+                               perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=3)
+              
+              reid <- paste0(nsid,"_tsne_3d")
+              scRNA@reductions[[reid]] <- redt2
+              
+            }else if(input$dimfunc == "UMAP"){
+              Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by UMAP...<br>")
+              
+              # redt1 <- RunUMAP(redt, dims = pcs.use,n.components = 2)
+              # reid <- paste0(nsid,"_umap")
+              # scRNA@reductions[[reid]] <- redt1
+              # 
+              redt2 <- RunUMAP(redt, dims = pcs.use,n.components = 3,reduction.name = "umap_3d")
+              reid <- paste0(nsid,"_umap_3d")
+              scRNA@reductions[[reid]] <- redt2
+            }
+          }else{
             
-            scRNA <- RunTSNE(object = scRNA, dims.use = pcs.use, do.fast = TRUE,
-                             perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=2)
+            scRNA <- RunPCA(scRNA, features = VariableFeatures(object = scRNA),verbose = F)
             
-            scRNA <- RunTSNE(object = scRNA, dims.use = pcs.use, do.fast = TRUE,
-                             perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=3,reduction.name = "tsne_3d")
+            Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by PCA...<br>")
             
-          }else if(input$dimfunc == "UMAP"){
-            Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by UMAP...<br>")
-            
-            scRNA <- RunUMAP(scRNA, dims = pcs.use,n.components = 2)
-            scRNA <- RunUMAP(scRNA, dims = pcs.use,n.components = 3,reduction.name = "umap_3d")
-            
+            #is tsne
+            if(input$dimfunc == "tSNE"){
+              Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by TSNE...<br>")
+              
+              scRNA <- RunTSNE(object = scRNA, dims.use = pcs.use, do.fast = TRUE,
+                               perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=2)
+              
+              scRNA <- RunTSNE(object = scRNA, dims.use = pcs.use, do.fast = TRUE,
+                               perplexity = input$perplexity, max_iter = input$max_iter,dim.embed=3,reduction.name = "tsne_3d")
+              
+            }else if(input$dimfunc == "UMAP"){
+              Info_out$out_dim <- paste0(Info_out$out_dim,"Dimension reduction by UMAP...<br>")
+              scRNA <- RunUMAP(scRNA, dims = pcs.use,n.components = 2)
+              scRNA <- RunUMAP(scRNA, dims = pcs.use,n.components = 3,reduction.name = "umap_3d")
+            }
           }
-          
           PISAS_pro@integrate[["Combind"]] <- scRNA
           PISAS_pro@step <- unique(c(step,"dimension"))
           PISAS_syn$PISAS_pro <<- PISAS_pro
@@ -2969,8 +3062,6 @@ server <- function(input, output,session) {
       
       return(NULL)
     })
-    
-    
   })
   
   output$Dimplot2D <- renderPlotly({
@@ -2986,22 +3077,33 @@ server <- function(input, output,session) {
     )
     scRNA <- PISAS_pro@integrate[["Combind"]]
     
-    if(input$dimfunc == "tSNE"){
-      validate(
-        need("tsne" %in% names(scRNA@reductions), "Please run TSNE first....")
-      )
-      reduce_var <- scRNA[["tsne"]]@cell.embeddings
-    }else if(input$dimfunc == "UMAP"){
-      validate(
-        need("umap" %in% names(scRNA@reductions), "Please run UMAP first....")
-      )
-      reduce_var <- scRNA[["umap"]]@cell.embeddings
+    type <- PISAS_pro@type
+    
+    if(type == "Multiple"){
+      n <- grep(input$cho_mes2,InFuncs)
+      nsid <- Indts[n]
       
-    }else if(input$dimfunc == "PCA"){
+      if(input$dimfunc == "PCA"){
+        recname <- nsid
+      }else{
+        if(nsid == "Seurat3_pca") nsid = "Seurat3"
+        recname <- paste0(nsid,"_",tolower(input$dimfunc))
+      }
+      
       validate(
-        need("pca" %in% names(scRNA@reductions), "Please run PCA first....")
+        need(recname %in% names(scRNA@reductions), paste0("Please run ",input$dimfunc," first...."))
       )
-      reduce_var <- scRNA[["pca"]]@cell.embeddings
+      
+      message("recname:",recname)
+      reduce_var <- scRNA[[recname]]@cell.embeddings[,1:2]
+      
+    }else{
+      recname <- tolower(input$dimfunc)
+      validate(
+        need(recname %in% names(scRNA@reductions), paste0("Please run ",toupper(recname)," first...."))
+      )
+      reduce_var <- scRNA[[recname]]@cell.embeddings[,1:2]
+      
     }
     
     groupBy <- input$groupBy
@@ -3026,24 +3128,37 @@ server <- function(input, output,session) {
     )
     
     scRNA <- PISAS_pro@integrate[["Combind"]]
-    
-    if(input$dimfunc == "tSNE"){
-      validate(
-        need("tsne" %in% names(scRNA@reductions), "")
-      )
-      reduce_var <- scRNA[["tsne_3d"]]@cell.embeddings
+    type <- PISAS_pro@type
+    if(type == "Multiple"){
+      n <- grep(input$cho_mes2,InFuncs)
+      nsid <- Indts[n]
+      if(input$dimfunc == "PCA"){
+        recname <- nsid
+      }else{
+        if(nsid == "Seurat3_pca") nsid = "Seurat3"
+        recname <- paste0(nsid,"_",tolower(input$dimfunc),"_3d")
+      }
       
-    }else if(input$dimfunc == "UMAP"){
       validate(
-        need("umap_3d" %in% names(scRNA@reductions), "")
+        need(recname %in% names(scRNA@reductions), paste0("Please run ",input$dimfunc," 3D first...."))
       )
-      reduce_var <- scRNA[["umap_3d"]]@cell.embeddings
-    }else if(input$dimfunc == "PCA"){
+      
+      message("recname:",recname)
+      
+      reduce_var <- scRNA[[recname]]@cell.embeddings[,1:3]
+      
+    }else{
+      recname <- paste0(tolower(input$dimfunc),"_3d")
+      if(input$dimfunc == "PCA"){
+        recname <- "pca"
+      }
       validate(
-        need("pca" %in% names(scRNA@reductions), "")
+        need(recname %in% names(scRNA@reductions), paste0("Please run ",toupper(recname)," first...."))
       )
-      reduce_var <- scRNA[["pca"]]@cell.embeddings
+      reduce_var <- scRNA[[recname]]@cell.embeddings[,1:3]
+      
     }
+    
     groupBy <- input$groupBy
     orders <- which(colnames(scRNA@meta.data) == groupBy)
     groups <- scRNA@meta.data[[orders]]
@@ -3077,6 +3192,8 @@ server <- function(input, output,session) {
     }
     selectInput("cho_mes", "Integrated methods:",group_lists,selected = sel_intfunc)
   })
+  
+  
   
   sel_g3 <- ""
   output$campSelector3 <- renderUI({
@@ -3119,9 +3236,10 @@ server <- function(input, output,session) {
         Info_out$out_clu <- c("<h3>Cluster</h3>")
         
         use.phenograph <- FALSE
+        scRNA <- PISAS_pro@integrate[["Combind"]]
         
         if(type == "Single"){
-          scRNA <- PISAS_pro@integrate[["Combind"]]
+          Info_out$out_clu <- paste0(Info_out$out_clu,paste0(input$dimchos,"...<br>"))
           
           if(!(tolower(input$dimchos) %in% names(scRNA@reductions))){
             redps <- paste0("Please return to the previous tab for ",input$dimchos," dimensionality reduction")
@@ -3134,18 +3252,30 @@ server <- function(input, output,session) {
             
           }else if(input$dimchos == "tSNE"){
             input.dat <- scRNA@reductions[["tsne"]]@cell.embeddings
-           
+            
           }else if(input$dimchos == "UMAP"){
             input.dat <- scRNA@reductions[["umap"]]@cell.embeddings
             
           }
           
         }else{
+          Info_out$out_clu <- paste0(Info_out$out_clu,paste0(input$cho_mes,".",input$dimchos,"...<br>"))
           
-          n <- grep(input$cho_mes,InFuncs) 
-          scRNA <- PISAS_pro@integrate$Combind
+          n <- grep(input$cho_mes,InFuncs)
+          nsid <- Indts[n]
+          if(input$dimchos == "PCA"){
+            recname <- nsid
+          }else{
+            if(nsid == "Seurat3_pca") nsid = "Seurat3"
+            recname <- paste0(nsid,"_",tolower(input$dimchos))
+          }
+          message("recname:",recname)
           
-          input.dat <- Embeddings(scRNA,reduction = Indts[n])
+          if(recname %in% names(scRNA@reductions)){
+            input.dat <- Embeddings(scRNA,reduction = recname)
+          }else{
+            Info_out$out_clu <- paste0(Info_out$out_clu,"Please run ",recname," first...<br>")
+          }
           
         }
         
@@ -3153,7 +3283,7 @@ server <- function(input, output,session) {
         
         col.name <- character()
         if(input$clusterfunc == "hierarchical"){
-          library(scRNA.seq.funcs)
+          
           dat <- apply(t(input.dat), 1, function(y) scRNA.seq.funcs::z.transform.helper(y))
           
           dd <- as.dist((1 - cor(t(dat), method = "pearson"))/2)
@@ -3162,19 +3292,19 @@ server <- function(input, output,session) {
           
           result <- cutree(hc, k = input$k.hc)
           scRNA@active.ident <- factor(result)
-          col.name <- paste0(input$cho_mes,'.hierarchical_clusters')
+          col.name <- paste0(input$cho_mes,".",input$dimchos,'.hierarchical_clusters')
           PISAS_pro@integrate$Combind@meta.data[,col.name] <- factor(result)
           
         }else if(input$clusterfunc == "kmeans"){
           cluster <- as.character(kmeans(input.dat, centers = input$centers.ks)$clust)
           scRNA@active.ident <- factor(cluster)
-          col.name <-  paste0(input$cho_mes,'.kmeans_clusters')
+          col.name <-  paste0(input$cho_mes,".",input$dimchos,'.kmeans_clusters')
           PISAS_pro@integrate$Combind@meta.data[,col.name] <- factor(cluster)
           
         }else{
           
           message(input$cho_mes)
-
+          
           if(input$cho_mes == "Seurat3"){
             DefaultAssay(scRNA) <- "integrated"
           }
@@ -3190,13 +3320,14 @@ server <- function(input, output,session) {
           }else if(input$clusterfunc == "SLM"){
             algorithm = 3
           }else if(input$clusterfunc =="Leiden"){
+            library(leiden)
             algorithm = 4
           }
           
           #scRNA <- FindClusters(object = scRNA, resolution = 0.1,algorithm = 1, verbose = FALSE)
           #DimPlot(scRNA,reduction = "liger_umap")+labs(title="LIGER+Louvain")
           scRNA <- FindClusters(object = scRNA, resolution = input$resolution,algorithm = algorithm, verbose = FALSE)
-          col.name <-  paste0(input$cho_mes,".",input$clusterfunc,"_clusters")
+          col.name <-  paste0(input$cho_mes,".",input$dimchos,".",input$clusterfunc,".res",input$resolution,"_clusters")
           PISAS_pro@integrate$Combind@meta.data[,col.name] <- scRNA@meta.data$seurat_clusters
         }
         
@@ -3226,20 +3357,6 @@ server <- function(input, output,session) {
     
   })
   
-  observe({
-    if(is.null(PISAS_syn$PISAS_pro)){
-      return(NULL)
-    }
-    PISAS_pro <- PISAS_syn$PISAS_pro
-    
-    type <- PISAS_pro@type
-    if(type == "Single"){
-      shinyjs::show("clu_dim")
-    }else{
-      shinyjs::hide("clu_dim")
-    }
-    
-  })
   
   observeEvent(input$btn_k, {
     if(is.null(PISAS_syn$PISAS_pro)){
@@ -3254,8 +3371,9 @@ server <- function(input, output,session) {
     )
     
     disable("btn_k")
+    scRNA <- PISAS_pro@integrate[["Combind"]]
+    
     if(type == "Single"){
-      scRNA <- PISAS_pro@integrate[["Combind"]]
       if(input$dimchos == "PCA"){
         input.dat <- scRNA@reductions[["pca"]]@cell.embeddings
         
@@ -3266,9 +3384,24 @@ server <- function(input, output,session) {
         input.dat <- scRNA@reductions[["umap"]]@cell.embeddings
       }
     }else{
-      n <- grep(input$cho_mes,InFuncs) 
-      scRNA <- PISAS_pro@integrate$Combind
-      input.dat <- Embeddings(scRNA,reduction = Integs[n])
+      
+      Info_out$out_clu <- paste0(Info_out$out_clu,paste0(input$cho_mes,".",input$dimchos,"...<br>"))
+      
+      n <- grep(input$cho_mes,InFuncs)
+      nsid <- Indts[n]
+      if(input$dimchos == "PCA"){
+        recname <- nsid
+      }else{
+        if(nsid == "Seurat3_pca") nsid = "Seurat3"
+        recname <- paste0(nsid,"_",tolower(input$dimchos))
+      }
+      
+      if(recname %in% names(scRNA@reductions)){
+        input.dat <- Embeddings(scRNA,reduction = recname)
+      }else{
+        Info_out$out_clu <- paste0(Info_out$out_clu,"Please run ",recname," first...<br>")
+      }
+      
     }
     
     library(factoextra)
@@ -3323,19 +3456,32 @@ server <- function(input, output,session) {
       
     }else{
       n <- grep(mes,InFuncs)
-      message(Indts[n])
+      
+      nsid <- Indts[n]
+      if(input$dimchos == "PCA"){
+        recname <- nsid
+      }else{
+        if(nsid == "Seurat3_pca") nsid = "Seurat3"
+        recname <- paste0(nsid,"_",tolower(input$dimchos))
+      }
+      
+      validate(
+        need(recname %in% names(scRNA@reductions), paste0("Please run ",mes,"_",input$dimchos," first!"))
+      )
+      
       reduce_var <- Embeddings(scRNA,reduction = Indts[n])
-      reduce_umap <- Embeddings(scRNA,reduction = Integs[n])
+      reduce_umap <- Embeddings(scRNA,reduction = recname)
       
     }
     
     #orders <- which(colnames(scRNA@meta.data) == groupBy)
     groups <- scRNA@meta.data[[groupBy]]
     
-    len_batch <- length(levels(factor(groups)))
-    validate(
-      need(len_batch>1, "Please select another group!")
-    )
+    # len_batch <- length(levels(factor(groups)))
+    # validate(
+    #   need(len_batch>1, "Please select another group!")
+    # )
+    
     ASW.groups <- estimate.ASW(reduce_var,groups)
     
     output$ASWPlot <- renderPlotly({
@@ -3417,6 +3563,7 @@ server <- function(input, output,session) {
     meta <- PISAS_pro@integrate$Combind@meta.data
     j <- grep("_clusters", colnames(meta))
     group_lists <- c(group_lists,as.list(colnames(meta)[j]))
+    if("annotations" %in% colnames(meta)) group_lists <- c(group_lists,"annotations")
     selectInput("cho_clu", "Cluster results:",group_lists)
   })
   
@@ -3494,10 +3641,13 @@ server <- function(input, output,session) {
         PISAS_pro@integrate[["Markers"]] <- scRNA.markers
         PISAS_pro@integrate[["DE.info"]] <- c(input$cho_clu)
         
-        n <- grep(unlist(strsplit(input$cho_clu, split = "[.]"))[1],InFuncs)
-        
-        PISAS_pro@integrate[["assay.map"]] <-  Integs[n]
-        
+        if(PISAS_pro@type == "Single"){
+          PISAS_pro@integrate[["assay.map"]] <- tolower(unlist(strsplit(PISAS_pro@integrate[["DE.info"]],"[.]"))[2])
+        }else{
+          n <- grep(unlist(strsplit(input$cho_clu, split = "[.]"))[1],InFuncs)
+          PISAS_pro@integrate[["assay.map"]] <-  Integs[n]
+        }
+        message("assay.map: ",PISAS_pro@integrate[["assay.map"]])
         PISAS_pro@integrate$Combind <- scRNA
         PISAS_pro@step <- c(step,"DE")
         PISAS_syn$PISAS_pro <<- PISAS_pro
@@ -3535,10 +3685,20 @@ server <- function(input, output,session) {
       need("DE" %in% PISAS_pro@step, "")
     )
     scRNA.markers <- PISAS_pro@integrate[["Markers"]]
+    topMarkers <- NULL
     if(input$DEfunc %in% c('wilcox', 'bimod', 't', "LR")){
-      topMarkers <- scRNA.markers %>% group_by(cluster) %>% top_n(input$topNum,wt= avg_logFC)
+      if("avg_log2FC" %in% colnames(scRNA.markers)){
+        topMarkers <- scRNA.markers %>% group_by(cluster) %>% top_n(input$topNum,wt= avg_log2FC)
+      }else{
+        topMarkers <- scRNA.markers %>% group_by(cluster) %>% top_n(input$topNum,wt= avg_logFC)
+      }
+      
     }else if(input$DEfunc == "roc"){
-      topMarkers <- scRNA.markers %>% group_by(cluster) %>% top_n(input$topNum,wt= myAUC)
+      
+      if("power" %in% colnames(scRNA.markers)){
+        topMarkers <- scRNA.markers %>% group_by(cluster) %>% top_n(input$topNum,wt= power)
+      }
+      
     }
     return(topMarkers)
   })
@@ -3568,22 +3728,23 @@ server <- function(input, output,session) {
     scRNA <- PISAS_pro@integrate$Combind
     
     assay.map <- PISAS_pro@integrate[["assay.map"]]
+    message(assay.map)
     validate(
       need(!is.null(input$selgenes), "** Please select the genes of interest to display!")
     )
     markers.to.plot <- input$selgenes
-    markers.to.plot <- gsub("[0-9]+ : ","",markers.to.plot)
+    #markers.to.plot <- gsub("[0-9]+ : ","",markers.to.plot)
+    markers.to.plot <- gsub(".*: ","",markers.to.plot)
     
     if(!is.null(markers.to.plot)){
       if(input$deplots == "Feature"){
         p <- FeaturePlot(scRNA, features = markers.to.plot)
         
-        # if(length(assay.map)!=0){
-        #   for (i in 1:length(markers.to.plot)) {
-        #     p[[i]]$data[,1:2] <- Embeddings(scRNA,reduction = assay.map) 
-        #   }
-        # }
-        
+        if(length(assay.map)!=0){
+          for (i in 1:length(markers.to.plot)) {
+            p[[i]]$data[,1:2] <- Embeddings(scRNA,reduction = assay.map) 
+          }
+        }
       }else if(input$deplots == "Ridge"){
         p <- RidgePlot(scRNA, features = markers.to.plot, ncol = 2)
         
@@ -3677,8 +3838,10 @@ server <- function(input, output,session) {
         
         if("avg_logFC" %in% colnames(geneList)){
           geneSet <- geneList$avg_logFC
-        }else if("avg_logFC" %in% colnames(geneList)){
-          geneSet <- geneList$myAUC
+        }else if("avg_log2FC" %in% colnames(geneList)){
+          geneSet <- geneList$avg_log2FC
+        }else if("power" %in% colnames(geneList)){
+          geneSet <- geneList$power
         }
         
         geneSet <- sort(geneSet, decreasing = TRUE)
@@ -3689,7 +3852,7 @@ server <- function(input, output,session) {
         
         organisms <- search_kegg_organism(species, by='scientific_name')
         organisms <- organisms$kegg_code[1]
-
+        
         ENTREZIDs <- mapIds(Org.Db, keys=geneList$gene,  keytype= "SYMBOL", column="ENTREZID")
         names(geneSet) <- ENTREZIDs
         
@@ -3745,6 +3908,7 @@ server <- function(input, output,session) {
           step <- unique(c(step,"KEGG"))
           PISAS_pro@integrate[["KEGG"]] <- keggres
         }
+        message(step)
         PISAS_pro@step <- step
         PISAS_syn$PISAS_pro <<- PISAS_pro
         setProgress(1)
@@ -3768,17 +3932,16 @@ server <- function(input, output,session) {
       return(NULL)
     }
     PISAS_pro <- PISAS_syn$PISAS_pro
-    message(PISAS_pro@step)
+    
     validate(
       need("GO" %in% PISAS_pro@step, "Please run cell GO enrichment analysis reduction first....")
     )
-    message("sdad")
     gores <- PISAS_pro@integrate[["GO"]]
     
     validate(
-      need(nrow(gores@result) > 0, "No gene can be mapped ... or No term enriched under specific pvalueCutoff...")
+      need(nrow(gores@result) > 0, "No gene can be mapped or No term enriched under specific pvalueCutoff! Please increase the value of p-value cutoff.")
     )
-    library(enrichplot)
+    
     if(input$goplots == "dotplot"){
       
       goplot <- enrichplot::dotplot(gores,showCategory=input$showCategory,color=input$gocolorBy,split="ONTOLOGY") + facet_grid(ONTOLOGY~., scale="free")
@@ -3800,6 +3963,7 @@ server <- function(input, output,session) {
       }
       
     }else if(input$goplots == "ridgeplot"){
+      
       validate(
         need("geneList" %in%  slotNames(gores), "Only the results obtained by FCS can be visualized by this method!")
       )
@@ -3856,6 +4020,7 @@ server <- function(input, output,session) {
     }
   )
   
+  
   output$gsea_geneSetID <- renderUI({
     
     if(is.null(PISAS_syn$PISAS_pro)){
@@ -3884,8 +4049,10 @@ server <- function(input, output,session) {
       need("geneList" %in%  slotNames(gores), "Only the results obtained by FCS can be visualized by this method!")
     )
     indx <- which(gores@result$ID %in% input$geneSetID)
+    message(indx)
     n <- length(indx)
-    if(n==0){
+    message(n)
+    if(n>0){
       color_pairs <- hue_pal()(n)
       plot <- enrichplot::gseaplot2(gores, geneSetID = indx, pvalue_table = TRUE,
                                     color = color_pairs, ES_geom = input$go_style)
@@ -3894,7 +4061,7 @@ server <- function(input, output,session) {
     }else{
       return(NULL)
     }
-   
+    
   })
   
   #KEGG绘图
@@ -3912,7 +4079,7 @@ server <- function(input, output,session) {
     validate(
       need(nrow(keggres@result) > 0, "No gene can be mapped ... or No term enriched under specific pvalueCutoff...")
     )
-    
+    keggplot <- NULL
     if(input$keggplots == "dotplot"){
       keggplot <- enrichplot::dotplot(keggres,showCategory=input$showCategory2,color=input$gocolorBy)
       
@@ -3928,7 +4095,7 @@ server <- function(input, output,session) {
       }else{
         keggplot <- heatplot(keggres, showCategory = input$showCategory2)
       }
-    }else if(input$goplots == "ridgeplot"){
+    }else if(input$keggplots == "ridgeplot"){
       validate(
         need("geneList" %in%  slotNames(keggres), "Only the results obtained by FCS can be visualized by this method!")
       )
@@ -3937,6 +4104,7 @@ server <- function(input, output,session) {
     
     return(keggplot)
   })
+  
   
   output$kegg_pathview <- renderUI({
     
@@ -3980,7 +4148,7 @@ server <- function(input, output,session) {
     file.remove(paste0(dir,"/",input$pathwayid,".xml"))
     list(src = outfile,
          contentType = 'image/png',
-         width = 1000,
+         width = 800,
          alt = "This is alternate text")
   }, deleteFile = TRUE)
   
@@ -4009,6 +4177,29 @@ server <- function(input, output,session) {
     return(DT::datatable(kegglist, options = list(orderClasses = TRUE,scrollX = TRUE),escape=FALSE))
     
   })
+  
+  output$download_kegglist <- downloadHandler(
+    
+    filename = "kegg.csv",
+    
+    content = function(file) {
+      
+      if(is.null(PISAS_syn$PISAS_pro)){
+        return(NULL)
+      }
+      PISAS_pro <- PISAS_syn$PISAS_pro
+      validate(
+        need("KEGG" %in% PISAS_pro@step, "")
+      )
+      
+      keggres <- PISAS_pro@integrate[["KEGG"]]
+      
+      kegglist <-  keggres@result
+      
+      write.csv(kegglist, file)
+    }
+  )
+  
   
   ## 
   
@@ -4049,14 +4240,13 @@ server <- function(input, output,session) {
         cds <- learn_graph(cds)
         
         # cds <- order_cells(cds)
-        reduction_method = "UMAP"
+        reduction_method <- "UMAP"
         reduced_dim_coords <- t(cds@principal_graph_aux[[reduction_method]]$dp_mst)
         
         ica_space_df <- as.data.frame(reduced_dim_coords)
         
         num_reduced_dim <- ncol(ica_space_df)
         if (num_reduced_dim >= 3) {
-          
           use_3d = TRUE
         }else {
           use_3d = FALSE
@@ -4066,6 +4256,7 @@ server <- function(input, output,session) {
                                          function(i) {
                                            paste0("prin_graph_dim_", i)
                                          }, c("a"))
+        
         ica_space_df$sample_name <- row.names(ica_space_df)
         ica_space_df$sample_state <- row.names(ica_space_df)
         
@@ -4141,6 +4332,7 @@ server <- function(input, output,session) {
       message(safeError(e))
       return(NULL)
     })
+    
   })
   
   output$nodeplot <- renderPlot({
@@ -4172,50 +4364,73 @@ server <- function(input, output,session) {
   })
   
   shiny::observeEvent(input$nodeplot_click, {
-    
-    Info_out$out_pseudo <-paste0(Info_out$out_pseudo,c("Click root nodes...<br>"))
-    
-    res <- shiny::nearPoints(ica_space_df, xvar = "prin_graph_dim_1", 
-                             yvar = "prin_graph_dim_2", input$nodeplot_click, 
-                             allRows = TRUE)
-    pseudo_vals$keeprows <- xor(pseudo_vals$keeprows, res$selected_)
+    tryCatch({
+      Info_out$out_pseudo <-paste0(Info_out$out_pseudo,c("Click root nodes...<br>"))
+      
+      res <- shiny::nearPoints(ica_space_df, xvar = "prin_graph_dim_1", 
+                               yvar = "prin_graph_dim_2", input$nodeplot_click, 
+                               allRows = TRUE)
+      pseudo_vals$keeprows <- xor(pseudo_vals$keeprows, res$selected_)
+    },
+    error=function(e){
+      
+      message(safeError(e))
+      return(NULL)
+    })
   })
   
   shiny::observeEvent(input$choose_toggle, {
-    message("input$nodeplot_brush:",input$nodeplot_brush)
-    if(is.null(input$nodeplot_brush)) return()
-    res <- shiny::brushedPoints(ica_space_df, input$nodeplot_brush, 
-                                xvar = "prin_graph_dim_1", yvar = "prin_graph_dim_2", 
-                                allRows = TRUE)
-    pseudo_vals$keeprows <- xor(pseudo_vals$keeprows, res$selected_)
+    tryCatch({
+      if(is.null(input$nodeplot_brush)) return()
+      res <- shiny::brushedPoints(ica_space_df, input$nodeplot_brush, 
+                                  xvar = "prin_graph_dim_1", yvar = "prin_graph_dim_2", 
+                                  allRows = TRUE)
+      pseudo_vals$keeprows <- xor(pseudo_vals$keeprows, res$selected_)
+    },
+    error=function(e){
+      
+      message(safeError(e))
+      return(NULL)
+    })
   })
   shiny::observeEvent(input$pseudo_reset, {
     pseudo_vals$keeprows <- rep(TRUE, nrow(ica_space_df))
   })
+  
   shiny::observeEvent(input$pseudo_done, {
-    if(is.null(PISAS_syn$PISAS_pro)){
+    tryCatch({
+      if(is.null(PISAS_syn$PISAS_pro)){
+        return(NULL)
+      }
+      PISAS_pro <- PISAS_syn$PISAS_pro
+      step <- PISAS_pro@step
+      validate(
+        need("pseudo" %in% names(PISAS_pro@integrate), "")
+      )
+      cds <- PISAS_pro@integrate[["pseudo"]]
+      
+      if(is.null(pseudo_vals$keeprows)) return()
+      
+      sel <- pseudo_vals$keeprows
+      
+      validate(
+        need(sum(!sel) > 0, "Please click the 'Choose' button first to confirm the selected root cells")
+      )
+      select_pr_nodes <- as.character(ica_space_df$sample_name[which(!sel)])
+      
+      cds <- order_cells(cds,root_pr_nodes = select_pr_nodes)
+      
+      PISAS_pro@integrate[["pseudo"]] <- cds
+      reduction_method = "UMAP"
+      print(cds@principal_graph_aux[[reduction_method]]$pseudotime)
+      PISAS_pro@step <- unique(c(step,"pseudo"))
+      PISAS_syn$PISAS_pro <<- PISAS_pro
+      Info_out$out_pseudo <-paste0(Info_out$out_pseudo,c("Finished!<br>"))
+    },
+    error=function(e){
+      message(safeError(e))
       return(NULL)
-    }
-    PISAS_pro <- PISAS_syn$PISAS_pro
-    step <- PISAS_pro@step
-    validate(
-      need("pseudo" %in% names(PISAS_pro@integrate), "")
-    )
-    cds <- PISAS_pro@integrate[["pseudo"]]
-    if(is.null(pseudo_vals$keeprows)) return()
-    
-    sel <- pseudo_vals$keeprows
-    select_pr_nodes <- as.character(ica_space_df$sample_name[which(!sel)])
-    
-    cds <- order_cells(cds,root_pr_nodes = select_pr_nodes)
-    
-    PISAS_pro@integrate[["pseudo"]] <- cds
-    reduction_method = "UMAP"
-    print(cds@principal_graph_aux[[reduction_method]]$pseudotime)
-    PISAS_pro@step <- unique(c(step,"pseudo"))
-    PISAS_syn$PISAS_pro <<- PISAS_pro
-    Info_out$out_pseudo <-paste0(Info_out$out_pseudo,c("Finished!<br>"))
-    
+    })
   })
   
   output$pseu_color <- renderUI({
@@ -4232,6 +4447,10 @@ server <- function(input, output,session) {
   
   output$pseudotimePlot1 <- renderPlotly({
     
+    validate(
+      need("monocle3" %in% installed.packages()[, "Package"], "The monocle3 package has not been installed. If you want to use this module, please follow https://cole-trapnell-lab.github.io/monocle3/ to install monocle3")
+    )
+    require(monocle3)
     if(is.null(PISAS_syn$PISAS_pro)){
       return(NULL)
     }
@@ -4246,12 +4465,12 @@ server <- function(input, output,session) {
       need("pseudotime" %in% names(cds@principal_graph_aux$UMAP), "Note: No psedotime for UMAP calculated. Please select the trajectory roots first to run the order_cells!")
     )
     
-    ply <- plot_cells(cds,
-                      color_cells_by = input$pse_col,
-                      label_cell_groups=TRUE,
-                      label_leaves=TRUE,
-                      label_branch_points=TRUE,
-                      graph_label_size=2.5)
+    ply <- monocle3::plot_cells(cds,
+                                color_cells_by = input$pse_col,
+                                label_cell_groups=TRUE,
+                                label_leaves=TRUE,
+                                label_branch_points=TRUE,
+                                graph_label_size=2.5)
     
     ply <- ggplotly(ply,autosize = T) %>% config(displaylogo = FALSE)
     
@@ -4279,9 +4498,6 @@ server <- function(input, output,session) {
     
   })
   
-  
-  
-  
   output$download_pheno <- downloadHandler(
     
     filename = "pheno.csv",
@@ -4304,6 +4520,9 @@ server <- function(input, output,session) {
   
   ##  
   ### 7 cluster annotation ----
+  
+  ## listen to methods_anno
+  
   output$info_anno<-renderText(Info_out$out_anno)
   
   markers.set <- reactive({
@@ -4322,6 +4541,26 @@ server <- function(input, output,session) {
     )
     return(markers.set)
   })
+  
+  anno.set <- reactive({
+    
+    anno.set <- NULL
+    
+    tryCatch(
+      {
+        if(is.null(input$file_annotation)) return(NULL)
+        filepath <- input$file_annotation$datapath
+        anno.set<- read.csv(filepath, header=TRUE, sep="\t",check.names=FALSE,stringsAsFactors=FALSE)
+        
+      },
+      error = function(e) {
+        return(safeError(e))
+      }
+    )
+    return(anno.set)
+  })
+  
+  
   observeEvent(input$btn_annotation, {
     tryCatch({
       disable("btn_annotation")
@@ -4346,7 +4585,7 @@ server <- function(input, output,session) {
         
         library(scCATCH)
         
-        Info_out$out_anno <- paste0(Info_out$out_anno,c("Evidence-based score and annotation for each cluster...<br>"))
+        
         if(input$methods_anno == "scCATCH"){
           message(input$species_anno)
           if(input$species_anno != "Others"){
@@ -4358,13 +4597,12 @@ server <- function(input, output,session) {
             Info_out$out_anno <- paste0(Info_out$out_anno,c("Please select the AUCell method to annotate the clusters. Failed!<br>"))
             return(NULL)
           }
-        }else{
+        }else if(input$methods_anno == "AUCell"){
+          Info_out$out_anno <- paste0(Info_out$out_anno,c("Evidence-based score and annotation for each cluster...<br>"))
+          
           library(AUCell)
-          message("jjj")
           req(markers.set())
           markers.set <- markers.set()
-          
-          message(dim(markers.set))
           xy.list <- list()
           for (i in 1:nrow(markers.set)) {
             xy.list[[rownames(markers.set)[i]]] <- gsub(" ","",unlist(strsplit(markers.set$cellMarker[i],",")))
@@ -4385,8 +4623,16 @@ server <- function(input, output,session) {
           PISAS_pro@integrate[["annotation"]] <- results
           new.labels <- colnames(results)[max.col(results)]
           
+        }else{
+          Info_out$out_anno <- paste0(Info_out$out_anno,c("Add user's own annotation for each cell...<br>"))
+          req(anno.set())
+          anno.set <- anno.set()
+          anno.set <- arrange(anno.set,cluster)
+          PISAS_pro@integrate[["annotation"]] <- anno.set
+          new.labels <- anno.set$cellType
+          
         }
-        scRNA@meta.data$annotation_clusters <- FoldNames(new.labels,scRNA)
+        scRNA@meta.data$annotations <- FoldNames(new.labels,scRNA)
         PISAS_pro@integrate$Combind <- scRNA
         PISAS_pro@integrate[["anno_func"]] <- input$methods_anno
         Info_out$out_anno <- paste0(Info_out$out_anno,c("Adding annotation meta-data...<br>"))
@@ -4432,7 +4678,7 @@ server <- function(input, output,session) {
       
       input.dat <- PISAS_pro@integrate[["assay.map"]]
     }
-    Idents(scRNA) <- "annotation_clusters"
+    Idents(scRNA) <- "annotations"
     DimPlotly(scRNA,reduction = input.dat,label=TRUE,pt.size = 3,label.size = 16)
   })
   
@@ -4479,8 +4725,9 @@ server <- function(input, output,session) {
       shinyalert("Warning!", "Please load the project first!", type = "error")
       return(NULL)
     }
-    username <- pipelines$username
-    withProgress(message = 'Saving the project...', value = 0.1, {
+    username <- as.character(pipelines$username)
+    message("save by: ",username)
+    withProgress(message = paste0('Saving the project by ',username), value = 0.1, {
       for (i in 1:7) {
         incProgress(0.1, detail = "This will take a long time.Storage time depends on your data volume and operating steps.")
         Sys.sleep(0.1)
@@ -4490,7 +4737,7 @@ server <- function(input, output,session) {
       PISAS_pro <- PISAS_syn$PISAS_pro
       len <- length(PISAS_pro@array)
       
-      list <- paste0("www/task/Projectlist.Rds")
+      list <- paste0(taskdir,"/Projectlist.Rds")
       create_time <- Sys.time()
       
       create.time <- as.character(format(create_time,format='%Y/%m/%d %H:%M:%S'))
@@ -4527,9 +4774,10 @@ server <- function(input, output,session) {
         message("update project info")
         ids <- Project_ID
         dslist <- readRDS(list)
+        message("nns",nrow(dslist))
         if(ids %in% dslist$ID){
           is <- dslist$username == username & dslist$ID == ids
-         
+          
           # dslist[is,] <- data.frame(ID= ids,Project=input$projectName,username=username,Type=input$Type,Size= Size,
           #                           Number = len,Seed=input$randomSeed,create.time= dslist[is,]$create.time,update.time= create.time)
           #
